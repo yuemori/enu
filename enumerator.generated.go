@@ -1,13 +1,10 @@
 package enumerator
 
 import (
-	"errors"
 	"sort"
 
 	"github.com/samber/lo"
 )
-
-var Done = errors.New("no more items in iterator")
 
 type IEnumerable[T any] interface {
 	Next() (T, error)

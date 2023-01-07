@@ -1,7 +1,11 @@
 package enumerator
 
 func FromSlice[T any](collection []T) *Enumerator[T] {
-	return &Enumerator[T]{iter: newSliceEnumerator(collection)}
+	return New[T](newSliceEnumerator(collection))
+}
+
+func FromSliceC[T comparable](collection []T) *EnumeratorC[T] {
+	return NewC[T](newSliceEnumerator(collection))
 }
 
 type sliceEnumerator[T any] struct {
