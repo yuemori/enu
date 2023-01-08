@@ -14,6 +14,18 @@ func (e *EnumeratorMap[K, V]) ToMap() map[K]V {
 	return result
 }
 
+func (e *EnumeratorMap[K, V]) Keys() []K {
+	return lo.Map(e.ToSlice(), func(kv KeyValuePair[K, V], _ int) K {
+		return kv.Key
+	})
+}
+
+func (e *EnumeratorMap[K, V]) Values() []V {
+	return lo.Map(e.ToSlice(), func(kv KeyValuePair[K, V], _ int) V {
+		return kv.Value
+	})
+}
+
 type KeyValuePair[K comparable, V any] struct {
 	Key   K
 	Value V
