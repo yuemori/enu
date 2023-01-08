@@ -137,3 +137,66 @@ func eachComparable[T comparable](iter IEnumerableComparable[T], iteratee func(i
 		index += 1
 	}
 }
+
+
+func (e *EnumeratorComparable[T]) Reject(predicate func(item T, index int) bool) *EnumeratorComparable[T] {
+	if e.err != nil {
+		return e
+	}
+	e.iter = newSliceEnumerator(lo.Reject(e.ToSlice(), predicate))
+	return e
+}
+
+func (e *EnumeratorComparable[T]) IsAll(predicate func(item T) bool) bool {
+	if e.err != nil {
+		return false
+	}
+	flag := true
+	for {
+		item, err := e.iter.Next()
+		if err == Done {
+			break
+		}
+		if !predicate(item) {
+			flag = false
+			break
+		}
+	}
+	return flag
+}
+
+func (e *EnumeratorComparable[T]) IsAny(predicate func(item T) bool) bool {
+	if e.err != nil {
+		return false
+	}
+	flag := false
+	for {
+		item, err := e.iter.Next()
+		if err == Done {
+			break
+		}
+		if predicate(item) {
+			flag = true
+			break
+		}
+	}
+	return flag
+}
+
+func (e *EnumeratorComparable[T]) Take(num int) *EnumeratorComparable[T] {
+	result := []T{}
+	index := 0
+	for {
+		item, err := e.iter.Next()
+		if err == Done {
+			break
+		}
+		if index >= num {
+			break
+		}
+		result = append(result, item)
+		index += 1
+	}
+	e.iter = newSliceEnumerator(result)
+	return e
+}

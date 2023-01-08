@@ -28,6 +28,17 @@ func TestFilter(t *testing.T) {
 	is.Equal([]int{2, 4}, r)
 }
 
+func TestReject(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	r := enumerator.From([]int{1, 2, 3, 4, 5}).Reject(func(i int, _ int) bool {
+		return i%2 == 0
+	}).ToSlice()
+
+	is.Equal([]int{1, 3, 5}, r)
+}
+
 type errorE[T any] struct{}
 
 func (e errorE[T]) Stop() {}
@@ -124,4 +135,43 @@ func TestToMap(t *testing.T) {
 
 	r1 := enumerator.From([]int{3, 2, 1}).ToMap()
 	is.Equal(map[int]int{0: 3, 1: 2, 2: 1}, r1)
+}
+
+func TestTake(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	r1 := enumerator.From([]int{1, 2, 3, 4, 5}).Take(3).ToSlice()
+	is.Equal([]int{1, 2, 3}, r1)
+
+	r2 := enumerator.From([]int{1, 2, 3, 4, 5}).Take(0).ToSlice()
+	is.Equal([]int{}, r2)
+
+	r3 := enumerator.From([]int{1, 2, 3, 4, 5}).Take(6).ToSlice()
+	is.Equal([]int{1, 2, 3, 4, 5}, r3)
+
+	r4 := enumerator.From([]int{1, 2, 3, 4, 5}).Take(-1).ToSlice()
+	is.Equal([]int{}, r4)
+}
+
+func TestIsAll(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	r1 := enumerator.From([]int{1, 1, 1, 1, 1}).IsAll(func(item int) bool { return item == 1 })
+	is.Equal(true, r1)
+
+	r2 := enumerator.From([]int{1, 2, 1, 1, 1}).IsAll(func(item int) bool { return item == 1 })
+	is.Equal(false, r2)
+}
+
+func TestIsAny(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	r1 := enumerator.From([]int{1, 1, 1, 1, 1}).IsAny(func(item int) bool { return item == 2 })
+	is.Equal(false, r1)
+
+	r2 := enumerator.From([]int{1, 2, 1, 1, 1}).IsAny(func(item int) bool { return item == 2 })
+	is.Equal(true, r2)
 }

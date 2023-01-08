@@ -137,3 +137,66 @@ func each{{.Suffix}}[{{.TypeWithConstraint}}](iter IEnumerable{{.Suffix}}[{{.Typ
 		index += 1
 	}
 }
+
+
+func (e *Enumerator{{.Suffix}}[{{.Type}}]) Reject(predicate func(item {{.ItemType}}, index int) bool) *Enumerator{{.Suffix}}[{{.Type}}] {
+	if e.err != nil {
+		return e
+	}
+	e.iter = newSliceEnumerator(lo.Reject(e.ToSlice(), predicate))
+	return e
+}
+
+func (e *Enumerator{{.Suffix}}[{{.Type}}]) IsAll(predicate func(item {{.ItemType}}) bool) bool {
+	if e.err != nil {
+		return false
+	}
+	flag := true
+	for {
+		item, err := e.iter.Next()
+		if err == Done {
+			break
+		}
+		if !predicate(item) {
+			flag = false
+			break
+		}
+	}
+	return flag
+}
+
+func (e *Enumerator{{.Suffix}}[{{.Type}}]) IsAny(predicate func(item {{.ItemType}}) bool) bool {
+	if e.err != nil {
+		return false
+	}
+	flag := false
+	for {
+		item, err := e.iter.Next()
+		if err == Done {
+			break
+		}
+		if predicate(item) {
+			flag = true
+			break
+		}
+	}
+	return flag
+}
+
+func (e *Enumerator{{.Suffix}}[{{.Type}}]) Take(num int) *Enumerator{{.Suffix}}[{{.Type}}] {
+	result := []{{.ItemType}}{}
+	index := 0
+	for {
+		item, err := e.iter.Next()
+		if err == Done {
+			break
+		}
+		if index >= num {
+			break
+		}
+		result = append(result, item)
+		index += 1
+	}
+	e.iter = newSliceEnumerator(result)
+	return e
+}

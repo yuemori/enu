@@ -137,3 +137,66 @@ func eachOrdered[T constraints.Ordered](iter IEnumerableOrdered[T], iteratee fun
 		index += 1
 	}
 }
+
+
+func (e *EnumeratorOrdered[T]) Reject(predicate func(item T, index int) bool) *EnumeratorOrdered[T] {
+	if e.err != nil {
+		return e
+	}
+	e.iter = newSliceEnumerator(lo.Reject(e.ToSlice(), predicate))
+	return e
+}
+
+func (e *EnumeratorOrdered[T]) IsAll(predicate func(item T) bool) bool {
+	if e.err != nil {
+		return false
+	}
+	flag := true
+	for {
+		item, err := e.iter.Next()
+		if err == Done {
+			break
+		}
+		if !predicate(item) {
+			flag = false
+			break
+		}
+	}
+	return flag
+}
+
+func (e *EnumeratorOrdered[T]) IsAny(predicate func(item T) bool) bool {
+	if e.err != nil {
+		return false
+	}
+	flag := false
+	for {
+		item, err := e.iter.Next()
+		if err == Done {
+			break
+		}
+		if predicate(item) {
+			flag = true
+			break
+		}
+	}
+	return flag
+}
+
+func (e *EnumeratorOrdered[T]) Take(num int) *EnumeratorOrdered[T] {
+	result := []T{}
+	index := 0
+	for {
+		item, err := e.iter.Next()
+		if err == Done {
+			break
+		}
+		if index >= num {
+			break
+		}
+		result = append(result, item)
+		index += 1
+	}
+	e.iter = newSliceEnumerator(result)
+	return e
+}

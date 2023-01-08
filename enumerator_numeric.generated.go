@@ -4,48 +4,48 @@ import (
 	"sort"
 
 	"github.com/samber/lo"
-  
+  "golang.org/x/exp/constraints"
 )
 
-type IEnumerableMap[K comparable, V any] interface {
-	Next() (KeyValuePair[K, V], error)
+type IEnumerableNumeric[T constraints.Integer | constraints.Float] interface {
+	Next() (T, error)
 	Stop()
 }
 
-type EnumeratorMap[K comparable, V any] struct {
-	iter IEnumerableMap[K, V]
+type EnumeratorNumeric[T constraints.Integer | constraints.Float] struct {
+	iter IEnumerableNumeric[T]
 	err  error
 }
 
-func NewMap[K comparable, V any](e IEnumerableMap[K, V]) *EnumeratorMap[K, V] {
-	return &EnumeratorMap[K, V]{iter: e}
+func NewNumeric[T constraints.Integer | constraints.Float](e IEnumerableNumeric[T]) *EnumeratorNumeric[T] {
+	return &EnumeratorNumeric[T]{iter: e}
 }
 
-func (e *EnumeratorMap[K, V]) Error() error {
+func (e *EnumeratorNumeric[T]) Error() error {
 	return e.err
 }
 
-func (e *EnumeratorMap[K, V]) Each(iteratee func(item KeyValuePair[K, V], index int)) *EnumeratorMap[K, V] {
+func (e *EnumeratorNumeric[T]) Each(iteratee func(item T, index int)) *EnumeratorNumeric[T] {
 	if e.err == nil {
-		eachMap(e.iter, iteratee)
+		eachNumeric(e.iter, iteratee)
 	}
 
 	return e
 }
 
-func (e *EnumeratorMap[K, V]) Count() int {
+func (e *EnumeratorNumeric[T]) Count() int {
 	v := 0
 	if e.err != nil {
 		return v
 	}
-	eachMap(e.iter, func(item KeyValuePair[K, V], _ int) {
+	eachNumeric(e.iter, func(item T, _ int) {
 		v += 1
 	})
 	return v
 }
 
-func (e *EnumeratorMap[K, V]) ToSlice() []KeyValuePair[K, V] {
-	result := make([]KeyValuePair[K, V], 0)
+func (e *EnumeratorNumeric[T]) ToSlice() []T {
+	result := make([]T, 0)
 	if e.err != nil {
 		return result
 	}
@@ -64,7 +64,7 @@ func (e *EnumeratorMap[K, V]) ToSlice() []KeyValuePair[K, V] {
 	return result
 }
 
-func (e *EnumeratorMap[K, V]) Filter(predicate func(item KeyValuePair[K, V], index int) bool) *EnumeratorMap[K, V] {
+func (e *EnumeratorNumeric[T]) Filter(predicate func(item T, index int) bool) *EnumeratorNumeric[T] {
 	if e.err != nil {
 		return e
 	}
@@ -72,14 +72,14 @@ func (e *EnumeratorMap[K, V]) Filter(predicate func(item KeyValuePair[K, V], ind
 	return e
 }
 
-func (e *EnumeratorMap[K, V]) First() (KeyValuePair[K, V], bool) {
+func (e *EnumeratorNumeric[T]) First() (T, bool) {
 	if e.err != nil {
-		var empty KeyValuePair[K, V]
+		var empty T
 		return empty, false
 	}
 	item, err := e.iter.Next()
 	if err != nil {
-		var empty KeyValuePair[K, V]
+		var empty T
 		if err != Done {
 			e.err = err
 		}
@@ -88,14 +88,14 @@ func (e *EnumeratorMap[K, V]) First() (KeyValuePair[K, V], bool) {
 	return item, true
 }
 
-func (e *EnumeratorMap[K, V]) Last() (KeyValuePair[K, V], bool) {
+func (e *EnumeratorNumeric[T]) Last() (T, bool) {
 	if e.err != nil {
-		var empty KeyValuePair[K, V]
+		var empty T
 		return empty, false
 	}
 	prev, err := e.iter.Next()
 	if err == Done {
-		var empty KeyValuePair[K, V]
+		var empty T
 		return empty, false
 	}
 	for {
@@ -105,19 +105,19 @@ func (e *EnumeratorMap[K, V]) Last() (KeyValuePair[K, V], bool) {
 		}
 		prev = item
 		if err != nil {
-			var empty KeyValuePair[K, V]
+			var empty T
 			e.err = err
 			return empty, false
 		}
 	}
 }
 
-func (e *EnumeratorMap[K, V]) Reverse() *EnumeratorMap[K, V] {
+func (e *EnumeratorNumeric[T]) Reverse() *EnumeratorNumeric[T] {
 	e.iter = newSliceEnumerator(lo.Reverse(e.ToSlice()))
 	return e
 }
 
-func (e *EnumeratorMap[K, V]) SortBy(sorter func(i, j KeyValuePair[K, V]) bool) *EnumeratorMap[K, V] {
+func (e *EnumeratorNumeric[T]) SortBy(sorter func(i, j T) bool) *EnumeratorNumeric[T] {
 	res := e.ToSlice()
 	sort.SliceStable(res, func(i, j int) bool {
 		return sorter(res[i], res[j])
@@ -126,7 +126,7 @@ func (e *EnumeratorMap[K, V]) SortBy(sorter func(i, j KeyValuePair[K, V]) bool) 
 	return e
 }
 
-func eachMap[K comparable, V any](iter IEnumerableMap[K, V], iteratee func(item KeyValuePair[K, V], index int)) {
+func eachNumeric[T constraints.Integer | constraints.Float](iter IEnumerableNumeric[T], iteratee func(item T, index int)) {
 	index := 0
 	for {
 		item, err := iter.Next()
@@ -139,7 +139,7 @@ func eachMap[K comparable, V any](iter IEnumerableMap[K, V], iteratee func(item 
 }
 
 
-func (e *EnumeratorMap[K, V]) Reject(predicate func(item KeyValuePair[K, V], index int) bool) *EnumeratorMap[K, V] {
+func (e *EnumeratorNumeric[T]) Reject(predicate func(item T, index int) bool) *EnumeratorNumeric[T] {
 	if e.err != nil {
 		return e
 	}
@@ -147,7 +147,7 @@ func (e *EnumeratorMap[K, V]) Reject(predicate func(item KeyValuePair[K, V], ind
 	return e
 }
 
-func (e *EnumeratorMap[K, V]) IsAll(predicate func(item KeyValuePair[K, V]) bool) bool {
+func (e *EnumeratorNumeric[T]) IsAll(predicate func(item T) bool) bool {
 	if e.err != nil {
 		return false
 	}
@@ -165,7 +165,7 @@ func (e *EnumeratorMap[K, V]) IsAll(predicate func(item KeyValuePair[K, V]) bool
 	return flag
 }
 
-func (e *EnumeratorMap[K, V]) IsAny(predicate func(item KeyValuePair[K, V]) bool) bool {
+func (e *EnumeratorNumeric[T]) IsAny(predicate func(item T) bool) bool {
 	if e.err != nil {
 		return false
 	}
@@ -183,8 +183,8 @@ func (e *EnumeratorMap[K, V]) IsAny(predicate func(item KeyValuePair[K, V]) bool
 	return flag
 }
 
-func (e *EnumeratorMap[K, V]) Take(num int) *EnumeratorMap[K, V] {
-	result := []KeyValuePair[K, V]{}
+func (e *EnumeratorNumeric[T]) Take(num int) *EnumeratorNumeric[T] {
+	result := []T{}
 	index := 0
 	for {
 		item, err := e.iter.Next()
