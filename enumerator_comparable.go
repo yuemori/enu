@@ -16,14 +16,14 @@ func ToComparable[T comparable](e Enumerator[T]) *EnumeratorComparable[T] {
 
 func (e *EnumeratorComparable[T]) ToMap() map[int]T {
 	result := map[int]T{}
-	_ = e.Each(func(item T, index int) {
+	e.Each(func(item T, index int) {
 		result[index] = item
 	})
 	return result
 }
 
 func (e *EnumeratorComparable[T]) Uniq() *EnumeratorComparable[T] {
-	e.iter = newSliceEnumerator(lo.Uniq(e.ToSlice()))
+	e.swap(lo.Uniq(e.ToSlice()))
 	return e
 }
 

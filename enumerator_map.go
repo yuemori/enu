@@ -29,6 +29,9 @@ func newMapEnumerator[K comparable, V any](collection map[K]V) *mapEnumerator[K,
 	return &mapEnumerator[K, V]{collection: collection, index: 0, keys: lo.Keys(collection)}
 }
 
+func (e *mapEnumerator[K, V]) Reset() {
+	e.index = 0
+}
 func (e *mapEnumerator[K, V]) Stop() {}
 func (e *mapEnumerator[K, V]) Next() (KeyValuePair[K, V], bool) {
 	if len(e.keys) > e.index {

@@ -24,6 +24,6 @@ func (e *EnumeratorOrdered[T]) Sort() *EnumeratorOrdered[T] {
 	sort.SliceStable(res, func(i, j int) bool {
 		return res[i] < res[j]
 	})
-	e.iter = newSliceEnumerator(res)
+	e.swap(res)
 	return e
 }

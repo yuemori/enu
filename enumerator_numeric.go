@@ -19,7 +19,7 @@ func ToNumeric[T constraints.Float | constraints.Integer](e *Enumerator[T]) *Enu
 
 func (e *EnumeratorNumeric[T]) ToMap() map[int]T {
 	result := map[int]T{}
-	_ = e.Each(func(item T, index int) {
+	e.Each(func(item T, index int) {
 		result[index] = item
 	})
 	return result
@@ -38,7 +38,7 @@ func (e *EnumeratorNumeric[T]) Sort() *EnumeratorNumeric[T] {
 	sort.SliceStable(res, func(i, j int) bool {
 		return res[i] < res[j]
 	})
-	e.iter = newSliceEnumerator(res)
+	e.swap(res)
 	return e
 }
 
@@ -47,7 +47,7 @@ func (e *EnumeratorNumeric[T]) Sum() T {
 }
 
 func (e *EnumeratorNumeric[T]) Uniq(item T) *EnumeratorNumeric[T] {
-	e.iter = newSliceEnumerator(lo.Uniq(e.ToSlice()))
+	e.swap(lo.Uniq(e.ToSlice()))
 	return e
 }
 
