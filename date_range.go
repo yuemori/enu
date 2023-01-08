@@ -8,23 +8,19 @@ func NewDateRange(start, end time.Time, stepDuration time.Duration) *Enumerator[
 	return &Enumerator[time.Time]{iter: NewDateRangeEnumerator(start, end, stepDuration)}
 }
 
-func NewDateRangeEnumerator(start, end time.Time, stepDuration time.Duration) *RangeEnumerator[time.Time] {
-	return &RangeEnumerator[time.Time]{
-		min: ComparableTime{value: start, step: stepDuration},
-		max: ComparableTime{value: end, step: stepDuration},
+func NewDateRangeEnumerator(start, end time.Time, stepDuration time.Duration) *RangeEnumerator[time.Time, time.Duration] {
+	return &RangeEnumerator[time.Time, time.Duration]{
+		min:  Time{value: start},
+		max:  Time{value: end},
+		step: stepDuration,
 	}
 }
 
-type ComparableTime struct {
+type Time struct {
 	value time.Time
-	step  time.Duration
 }
 
-func compareTime(value time.Time, step time.Duration) ComparableTime {
-	return ComparableTime{value: value, step: step}
-}
-
-func (t ComparableTime) Compare(other time.Time) int {
+func (t Time) Compare(other time.Time) int {
 	if t.value.Before(other) {
 		return -1
 	}
@@ -34,10 +30,10 @@ func (t ComparableTime) Compare(other time.Time) int {
 	return 0
 }
 
-func (t ComparableTime) Value() time.Time {
+func (t Time) Value() time.Time {
 	return t.value
 }
 
-func (t ComparableTime) Next() IComparable[time.Time] {
-	return ComparableTime{value: t.value.Add(t.step), step: t.step}
+func (t Time) Next(duration time.Duration) RangeValuer[time.Time, time.Duration] {
+	return Time{value: t.value.Add(duration)}
 }
