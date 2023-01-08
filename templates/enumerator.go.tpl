@@ -76,6 +76,27 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) Nth(index int) ({{.ItemType}}, bool) 
 	return item, true
 }
 
+func (e *Enumerator{{.Suffix}}[{{.Type}}]) Find(predicate func(item {{.ItemType}}) bool) ({{.ItemType}}, bool) {
+	if e.isStopped {
+		return lo.Find(e.result, predicate)
+	}
+
+	result := []{{.ItemType}}{}
+	for {
+		item, ok := e.iter.Next()
+		if !ok {
+			break
+		}
+		if predicate(item) {
+			e.iter.Reset()
+			return item, true
+		}
+	}
+	e.isStopped = true
+	e.swap(result)
+	return empty[{{.ItemType}}](), false
+}
+
 func (e *Enumerator{{.Suffix}}[{{.Type}}]) First() ({{.ItemType}}, bool) {
 	if e.isStopped {
 		if len(e.result) == 0 {

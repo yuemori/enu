@@ -76,6 +76,27 @@ func (e *EnumeratorOrdered[T]) Nth(index int) (T, bool) {
 	return item, true
 }
 
+func (e *EnumeratorOrdered[T]) Find(predicate func(item T) bool) (T, bool) {
+	if e.isStopped {
+		return lo.Find(e.result, predicate)
+	}
+
+	result := []T{}
+	for {
+		item, ok := e.iter.Next()
+		if !ok {
+			break
+		}
+		if predicate(item) {
+			e.iter.Reset()
+			return item, true
+		}
+	}
+	e.isStopped = true
+	e.swap(result)
+	return empty[T](), false
+}
+
 func (e *EnumeratorOrdered[T]) First() (T, bool) {
 	if e.isStopped {
 		if len(e.result) == 0 {

@@ -76,6 +76,27 @@ func (e *EnumeratorMap[K, V]) Nth(index int) (KeyValuePair[K, V], bool) {
 	return item, true
 }
 
+func (e *EnumeratorMap[K, V]) Find(predicate func(item KeyValuePair[K, V]) bool) (KeyValuePair[K, V], bool) {
+	if e.isStopped {
+		return lo.Find(e.result, predicate)
+	}
+
+	result := []KeyValuePair[K, V]{}
+	for {
+		item, ok := e.iter.Next()
+		if !ok {
+			break
+		}
+		if predicate(item) {
+			e.iter.Reset()
+			return item, true
+		}
+	}
+	e.isStopped = true
+	e.swap(result)
+	return empty[KeyValuePair[K, V]](), false
+}
+
 func (e *EnumeratorMap[K, V]) First() (KeyValuePair[K, V], bool) {
 	if e.isStopped {
 		if len(e.result) == 0 {

@@ -38,6 +38,30 @@ func TestReject(t *testing.T) {
 	is.Equal([]int{1, 3, 5}, r)
 }
 
+func TestFind(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	slices := enu.From([]int{1, 2, 3, 4, 5})
+
+	r1, ok := slices.Find(func(item int) bool {
+		return item%2 == 0
+	})
+	is.Equal(true, ok)
+	is.Equal(2, r1)
+
+	r2, ok := slices.Find(func(item int) bool {
+		return item%2 == 0
+	})
+	is.Equal(true, ok)
+	is.Equal(2, r2)
+
+	_, ok = slices.Find(func(item int) bool {
+		return item > 10
+	})
+	is.Equal(false, ok)
+}
+
 func TestNth(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
