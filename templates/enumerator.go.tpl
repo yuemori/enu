@@ -67,6 +67,15 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) Filter(predicate func(item {{.ItemTyp
 	return e
 }
 
+func (e *Enumerator{{.Suffix}}[{{.Type}}]) Nth(index int) ({{.ItemType}}, bool) {
+	item, err := lo.Nth(e.ToSlice(),index)
+	if err != nil {
+		return empty[{{.ItemType}}](), false
+	}
+
+	return item, true
+}
+
 func (e *Enumerator{{.Suffix}}[{{.Type}}]) First() ({{.ItemType}}, bool) {
 	if e.isStopped {
 		if len(e.result) == 0 {
@@ -75,10 +84,13 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) First() ({{.ItemType}}, bool) {
 		return e.result[0], true
 	}
 	item, ok := e.iter.Next()
-	e.iter.Reset()
 	if !ok {
+		e.swap([]{{.ItemType}}{})
+		e.iter.Stop()
+		e.isStopped = true
 		return empty[{{.ItemType}}](), false
 	}
+	e.iter.Reset()
 	return item, true
 }
 

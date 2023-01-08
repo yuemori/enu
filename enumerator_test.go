@@ -38,27 +38,55 @@ func TestReject(t *testing.T) {
 	is.Equal([]int{1, 3, 5}, r)
 }
 
+func TestNth(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	slices := enu.From([]int{1, 2, 3, 4, 5})
+
+	r1, ok := slices.Nth(3)
+	is.Equal(true, ok)
+	is.Equal(4, r1)
+
+	r2, ok := slices.Nth(1)
+	is.Equal(true, ok)
+	is.Equal(2, r2)
+
+	_, ok = slices.Nth(5)
+	is.Equal(false, ok)
+
+	r3, ok := slices.Nth(-1)
+	is.Equal(true, ok)
+	is.Equal(5, r3)
+}
+
 func TestFirst(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	r1, ok := enu.From([]int{1, 2, 3, 4, 5}).First()
+	slices := enu.From([]int{1, 2, 3, 4, 5})
+
+	r1, ok := slices.First()
 	is.Equal(true, ok)
 	is.Equal(1, r1)
 
-	r2, ok := enu.From([]int{}).First()
+	r2, ok := slices.First()
+	is.Equal(true, ok)
+	is.Equal(1, r2)
+
+	r3, ok := enu.From([]int{}).First()
 	is.Equal(false, ok)
-	is.Equal(0, r2)
+	is.Equal(0, r3)
 
 	type dummy struct{}
 
-	r3, ok := enu.From([]dummy{}).First()
+	r4, ok := enu.From([]dummy{}).First()
 	is.Equal(false, ok)
-	is.Equal(dummy{}, r3)
+	is.Equal(dummy{}, r4)
 
-	r4, ok := enu.From([]*dummy{}).First()
+	r5, ok := enu.From([]*dummy{}).First()
 	is.Equal(false, ok)
-	is.Nil(r4)
+	is.Nil(r5)
 }
 
 func TestLast(t *testing.T) {

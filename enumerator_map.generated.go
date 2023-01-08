@@ -67,6 +67,15 @@ func (e *EnumeratorMap[K, V]) Filter(predicate func(item KeyValuePair[K, V], ind
 	return e
 }
 
+func (e *EnumeratorMap[K, V]) Nth(index int) (KeyValuePair[K, V], bool) {
+	item, err := lo.Nth(e.ToSlice(),index)
+	if err != nil {
+		return empty[KeyValuePair[K, V]](), false
+	}
+
+	return item, true
+}
+
 func (e *EnumeratorMap[K, V]) First() (KeyValuePair[K, V], bool) {
 	if e.isStopped {
 		if len(e.result) == 0 {
@@ -75,10 +84,13 @@ func (e *EnumeratorMap[K, V]) First() (KeyValuePair[K, V], bool) {
 		return e.result[0], true
 	}
 	item, ok := e.iter.Next()
-	e.iter.Reset()
 	if !ok {
+		e.swap([]KeyValuePair[K, V]{})
+		e.iter.Stop()
+		e.isStopped = true
 		return empty[KeyValuePair[K, V]](), false
 	}
+	e.iter.Reset()
 	return item, true
 }
 

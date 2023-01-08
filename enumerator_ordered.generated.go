@@ -67,6 +67,15 @@ func (e *EnumeratorOrdered[T]) Filter(predicate func(item T, index int) bool) *E
 	return e
 }
 
+func (e *EnumeratorOrdered[T]) Nth(index int) (T, bool) {
+	item, err := lo.Nth(e.ToSlice(),index)
+	if err != nil {
+		return empty[T](), false
+	}
+
+	return item, true
+}
+
 func (e *EnumeratorOrdered[T]) First() (T, bool) {
 	if e.isStopped {
 		if len(e.result) == 0 {
@@ -75,10 +84,13 @@ func (e *EnumeratorOrdered[T]) First() (T, bool) {
 		return e.result[0], true
 	}
 	item, ok := e.iter.Next()
-	e.iter.Reset()
 	if !ok {
+		e.swap([]T{})
+		e.iter.Stop()
+		e.isStopped = true
 		return empty[T](), false
 	}
+	e.iter.Reset()
 	return item, true
 }
 
