@@ -9,7 +9,6 @@ import (
 
 type IEnumerable{{.Suffix}}[{{.TypeWithConstraint}}] interface {
 	Next() ({{.ItemType}}, bool)
-	Stop()
 }
 
 type Enumerator{{.Suffix}}[{{.TypeWithConstraint}}] struct {

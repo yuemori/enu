@@ -9,7 +9,6 @@ import (
 
 type IEnumerableMap[K comparable, V any] interface {
 	Next() (KeyValuePair[K, V], bool)
-	Stop()
 }
 
 type EnumeratorMap[K comparable, V any] struct {

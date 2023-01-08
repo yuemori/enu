@@ -9,7 +9,6 @@ import (
 
 type IEnumerableOrdered[T constraints.Ordered] interface {
 	Next() (T, bool)
-	Stop()
 }
 
 type EnumeratorOrdered[T constraints.Ordered] struct {

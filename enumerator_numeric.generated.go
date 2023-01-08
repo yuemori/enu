@@ -9,7 +9,6 @@ import (
 
 type IEnumerableNumeric[T constraints.Integer | constraints.Float] interface {
 	Next() (T, bool)
-	Stop()
 }
 
 type EnumeratorNumeric[T constraints.Integer | constraints.Float] struct {

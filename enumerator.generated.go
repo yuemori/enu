@@ -9,7 +9,6 @@ import (
 
 type IEnumerable[T any] interface {
 	Next() (T, bool)
-	Stop()
 }
 
 type Enumerator[T any] struct {

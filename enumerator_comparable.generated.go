@@ -9,7 +9,6 @@ import (
 
 type IEnumerableComparable[T comparable] interface {
 	Next() (T, bool)
-	Stop()
 }
 
 type EnumeratorComparable[T comparable] struct {
