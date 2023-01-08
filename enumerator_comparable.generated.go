@@ -8,36 +8,26 @@ import (
 )
 
 type IEnumerableComparable[T comparable] interface {
-	Next() (T, error)
+	Next() (T, bool)
 	Stop()
 }
 
 type EnumeratorComparable[T comparable] struct {
 	iter IEnumerableComparable[T]
-	err  error
 }
 
 func NewComparable[T comparable](e IEnumerableComparable[T]) *EnumeratorComparable[T] {
 	return &EnumeratorComparable[T]{iter: e}
 }
 
-func (e *EnumeratorComparable[T]) Error() error {
-	return e.err
-}
-
 func (e *EnumeratorComparable[T]) Each(iteratee func(item T, index int)) *EnumeratorComparable[T] {
-	if e.err == nil {
-		eachComparable(e.iter, iteratee)
-	}
+  eachComparable(e.iter, iteratee)
 
 	return e
 }
 
 func (e *EnumeratorComparable[T]) Count() int {
 	v := 0
-	if e.err != nil {
-		return v
-	}
 	eachComparable(e.iter, func(item T, _ int) {
 		v += 1
 	})
@@ -46,17 +36,10 @@ func (e *EnumeratorComparable[T]) Count() int {
 
 func (e *EnumeratorComparable[T]) ToSlice() []T {
 	result := make([]T, 0)
-	if e.err != nil {
-		return result
-	}
 
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
-			break
-		}
-		if err != nil {
-			e.err = err
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		result = append(result, item)
@@ -65,50 +48,31 @@ func (e *EnumeratorComparable[T]) ToSlice() []T {
 }
 
 func (e *EnumeratorComparable[T]) Filter(predicate func(item T, index int) bool) *EnumeratorComparable[T] {
-	if e.err != nil {
-		return e
-	}
 	e.iter = newSliceEnumerator(lo.Filter(e.ToSlice(), predicate))
 	return e
 }
 
 func (e *EnumeratorComparable[T]) First() (T, bool) {
-	if e.err != nil {
+	item, ok := e.iter.Next()
+	if !ok {
 		var empty T
-		return empty, false
-	}
-	item, err := e.iter.Next()
-	if err != nil {
-		var empty T
-		if err != Done {
-			e.err = err
-		}
 		return empty, false
 	}
 	return item, true
 }
 
 func (e *EnumeratorComparable[T]) Last() (T, bool) {
-	if e.err != nil {
-		var empty T
-		return empty, false
-	}
-	prev, err := e.iter.Next()
-	if err == Done {
+	prev, ok := e.iter.Next()
+	if !ok {
 		var empty T
 		return empty, false
 	}
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
+		item, ok := e.iter.Next()
+		if !ok {
 			return prev, true
 		}
 		prev = item
-		if err != nil {
-			var empty T
-			e.err = err
-			return empty, false
-		}
 	}
 }
 
@@ -129,8 +93,8 @@ func (e *EnumeratorComparable[T]) SortBy(sorter func(i, j T) bool) *EnumeratorCo
 func eachComparable[T comparable](iter IEnumerableComparable[T], iteratee func(item T, index int)) {
 	index := 0
 	for {
-		item, err := iter.Next()
-		if err == Done {
+		item, ok := iter.Next()
+		if !ok {
 			break
 		}
 		iteratee(item, index)
@@ -140,21 +104,15 @@ func eachComparable[T comparable](iter IEnumerableComparable[T], iteratee func(i
 
 
 func (e *EnumeratorComparable[T]) Reject(predicate func(item T, index int) bool) *EnumeratorComparable[T] {
-	if e.err != nil {
-		return e
-	}
 	e.iter = newSliceEnumerator(lo.Reject(e.ToSlice(), predicate))
 	return e
 }
 
 func (e *EnumeratorComparable[T]) IsAll(predicate func(item T) bool) bool {
-	if e.err != nil {
-		return false
-	}
 	flag := true
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		if !predicate(item) {
@@ -166,13 +124,10 @@ func (e *EnumeratorComparable[T]) IsAll(predicate func(item T) bool) bool {
 }
 
 func (e *EnumeratorComparable[T]) IsAny(predicate func(item T) bool) bool {
-	if e.err != nil {
-		return false
-	}
 	flag := false
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		if predicate(item) {
@@ -187,8 +142,8 @@ func (e *EnumeratorComparable[T]) Take(num int) *EnumeratorComparable[T] {
 	result := []T{}
 	index := 0
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		if index >= num {

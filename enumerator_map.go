@@ -30,13 +30,13 @@ func newMapEnumerator[K comparable, V any](collection map[K]V) *mapEnumerator[K,
 }
 
 func (e *mapEnumerator[K, V]) Stop() {}
-func (e *mapEnumerator[K, V]) Next() (KeyValuePair[K, V], error) {
+func (e *mapEnumerator[K, V]) Next() (KeyValuePair[K, V], bool) {
 	if len(e.keys) > e.index {
 		key := e.keys[e.index]
 		value := e.collection[key]
 		e.index += 1
-		return KeyValuePair[K, V]{Key: key, Value: value}, nil
+		return KeyValuePair[K, V]{Key: key, Value: value}, true
 	}
 	var empty KeyValuePair[K, V]
-	return empty, Done
+	return empty, false
 }

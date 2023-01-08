@@ -22,12 +22,12 @@ func newSliceEnumerator[T any](collection []T) *sliceEnumerator[T] {
 }
 
 func (e *sliceEnumerator[T]) Stop() {}
-func (e *sliceEnumerator[T]) Next() (T, error) {
+func (e *sliceEnumerator[T]) Next() (T, bool) {
 	if len(e.collection) > e.index {
 		item := e.collection[e.index]
 		e.index += 1
-		return item, nil
+		return item, true
 	}
 	var empty T
-	return empty, Done
+	return empty, false
 }

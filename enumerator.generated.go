@@ -8,36 +8,26 @@ import (
 )
 
 type IEnumerable[T any] interface {
-	Next() (T, error)
+	Next() (T, bool)
 	Stop()
 }
 
 type Enumerator[T any] struct {
 	iter IEnumerable[T]
-	err  error
 }
 
 func New[T any](e IEnumerable[T]) *Enumerator[T] {
 	return &Enumerator[T]{iter: e}
 }
 
-func (e *Enumerator[T]) Error() error {
-	return e.err
-}
-
 func (e *Enumerator[T]) Each(iteratee func(item T, index int)) *Enumerator[T] {
-	if e.err == nil {
-		each(e.iter, iteratee)
-	}
+  each(e.iter, iteratee)
 
 	return e
 }
 
 func (e *Enumerator[T]) Count() int {
 	v := 0
-	if e.err != nil {
-		return v
-	}
 	each(e.iter, func(item T, _ int) {
 		v += 1
 	})
@@ -46,17 +36,10 @@ func (e *Enumerator[T]) Count() int {
 
 func (e *Enumerator[T]) ToSlice() []T {
 	result := make([]T, 0)
-	if e.err != nil {
-		return result
-	}
 
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
-			break
-		}
-		if err != nil {
-			e.err = err
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		result = append(result, item)
@@ -65,50 +48,31 @@ func (e *Enumerator[T]) ToSlice() []T {
 }
 
 func (e *Enumerator[T]) Filter(predicate func(item T, index int) bool) *Enumerator[T] {
-	if e.err != nil {
-		return e
-	}
 	e.iter = newSliceEnumerator(lo.Filter(e.ToSlice(), predicate))
 	return e
 }
 
 func (e *Enumerator[T]) First() (T, bool) {
-	if e.err != nil {
+	item, ok := e.iter.Next()
+	if !ok {
 		var empty T
-		return empty, false
-	}
-	item, err := e.iter.Next()
-	if err != nil {
-		var empty T
-		if err != Done {
-			e.err = err
-		}
 		return empty, false
 	}
 	return item, true
 }
 
 func (e *Enumerator[T]) Last() (T, bool) {
-	if e.err != nil {
-		var empty T
-		return empty, false
-	}
-	prev, err := e.iter.Next()
-	if err == Done {
+	prev, ok := e.iter.Next()
+	if !ok {
 		var empty T
 		return empty, false
 	}
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
+		item, ok := e.iter.Next()
+		if !ok {
 			return prev, true
 		}
 		prev = item
-		if err != nil {
-			var empty T
-			e.err = err
-			return empty, false
-		}
 	}
 }
 
@@ -129,8 +93,8 @@ func (e *Enumerator[T]) SortBy(sorter func(i, j T) bool) *Enumerator[T] {
 func each[T any](iter IEnumerable[T], iteratee func(item T, index int)) {
 	index := 0
 	for {
-		item, err := iter.Next()
-		if err == Done {
+		item, ok := iter.Next()
+		if !ok {
 			break
 		}
 		iteratee(item, index)
@@ -140,21 +104,15 @@ func each[T any](iter IEnumerable[T], iteratee func(item T, index int)) {
 
 
 func (e *Enumerator[T]) Reject(predicate func(item T, index int) bool) *Enumerator[T] {
-	if e.err != nil {
-		return e
-	}
 	e.iter = newSliceEnumerator(lo.Reject(e.ToSlice(), predicate))
 	return e
 }
 
 func (e *Enumerator[T]) IsAll(predicate func(item T) bool) bool {
-	if e.err != nil {
-		return false
-	}
 	flag := true
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		if !predicate(item) {
@@ -166,13 +124,10 @@ func (e *Enumerator[T]) IsAll(predicate func(item T) bool) bool {
 }
 
 func (e *Enumerator[T]) IsAny(predicate func(item T) bool) bool {
-	if e.err != nil {
-		return false
-	}
 	flag := false
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		if predicate(item) {
@@ -187,8 +142,8 @@ func (e *Enumerator[T]) Take(num int) *Enumerator[T] {
 	result := []T{}
 	index := 0
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		if index >= num {

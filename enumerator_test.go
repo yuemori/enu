@@ -1,7 +1,6 @@
 package enumerator_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -39,14 +38,6 @@ func TestReject(t *testing.T) {
 	is.Equal([]int{1, 3, 5}, r)
 }
 
-type errorE[T any] struct{}
-
-func (e errorE[T]) Stop() {}
-func (e errorE[T]) Next() (T, error) {
-	var empty T
-	return empty, errors.New("error")
-}
-
 func TestFirst(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
@@ -68,12 +59,6 @@ func TestFirst(t *testing.T) {
 	r4, ok := enumerator.From([]*dummy{}).First()
 	is.Equal(false, ok)
 	is.Nil(r4)
-
-	enum := enumerator.New[int](errorE[int]{})
-	r5, ok := enum.First()
-	is.Equal(false, ok)
-	is.Equal(0, r5)
-	is.Error(enum.Error())
 }
 
 func TestLast(t *testing.T) {
@@ -97,12 +82,6 @@ func TestLast(t *testing.T) {
 	r4, ok := enumerator.From([]*dummy{}).Last()
 	is.Equal(false, ok)
 	is.Nil(r4)
-
-	enum := enumerator.New[int](errorE[int]{})
-	r5, ok := enum.First()
-	is.Equal(false, ok)
-	is.Equal(0, r5)
-	is.Error(enum.Error())
 
 	r6, ok := enumerator.FromMap(map[string]int{
 		"a": 1,

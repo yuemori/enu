@@ -11,7 +11,6 @@ func FromComparable[T comparable](collection []T) *EnumeratorComparable[T] {
 func ToComparable[T comparable](e Enumerator[T]) *EnumeratorComparable[T] {
 	return &EnumeratorComparable[T]{
 		iter: e.iter,
-		err:  e.err,
 	}
 }
 

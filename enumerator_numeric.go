@@ -14,7 +14,6 @@ func FromNumeric[T constraints.Float | constraints.Integer](collection []T) *Enu
 func ToNumeric[T constraints.Float | constraints.Integer](e *Enumerator[T]) *EnumeratorNumeric[T] {
 	return &EnumeratorNumeric[T]{
 		iter: e.iter,
-		err:  e.err,
 	}
 }
 

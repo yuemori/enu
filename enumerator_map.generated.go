@@ -8,36 +8,26 @@ import (
 )
 
 type IEnumerableMap[K comparable, V any] interface {
-	Next() (KeyValuePair[K, V], error)
+	Next() (KeyValuePair[K, V], bool)
 	Stop()
 }
 
 type EnumeratorMap[K comparable, V any] struct {
 	iter IEnumerableMap[K, V]
-	err  error
 }
 
 func NewMap[K comparable, V any](e IEnumerableMap[K, V]) *EnumeratorMap[K, V] {
 	return &EnumeratorMap[K, V]{iter: e}
 }
 
-func (e *EnumeratorMap[K, V]) Error() error {
-	return e.err
-}
-
 func (e *EnumeratorMap[K, V]) Each(iteratee func(item KeyValuePair[K, V], index int)) *EnumeratorMap[K, V] {
-	if e.err == nil {
-		eachMap(e.iter, iteratee)
-	}
+  eachMap(e.iter, iteratee)
 
 	return e
 }
 
 func (e *EnumeratorMap[K, V]) Count() int {
 	v := 0
-	if e.err != nil {
-		return v
-	}
 	eachMap(e.iter, func(item KeyValuePair[K, V], _ int) {
 		v += 1
 	})
@@ -46,17 +36,10 @@ func (e *EnumeratorMap[K, V]) Count() int {
 
 func (e *EnumeratorMap[K, V]) ToSlice() []KeyValuePair[K, V] {
 	result := make([]KeyValuePair[K, V], 0)
-	if e.err != nil {
-		return result
-	}
 
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
-			break
-		}
-		if err != nil {
-			e.err = err
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		result = append(result, item)
@@ -65,50 +48,31 @@ func (e *EnumeratorMap[K, V]) ToSlice() []KeyValuePair[K, V] {
 }
 
 func (e *EnumeratorMap[K, V]) Filter(predicate func(item KeyValuePair[K, V], index int) bool) *EnumeratorMap[K, V] {
-	if e.err != nil {
-		return e
-	}
 	e.iter = newSliceEnumerator(lo.Filter(e.ToSlice(), predicate))
 	return e
 }
 
 func (e *EnumeratorMap[K, V]) First() (KeyValuePair[K, V], bool) {
-	if e.err != nil {
+	item, ok := e.iter.Next()
+	if !ok {
 		var empty KeyValuePair[K, V]
-		return empty, false
-	}
-	item, err := e.iter.Next()
-	if err != nil {
-		var empty KeyValuePair[K, V]
-		if err != Done {
-			e.err = err
-		}
 		return empty, false
 	}
 	return item, true
 }
 
 func (e *EnumeratorMap[K, V]) Last() (KeyValuePair[K, V], bool) {
-	if e.err != nil {
-		var empty KeyValuePair[K, V]
-		return empty, false
-	}
-	prev, err := e.iter.Next()
-	if err == Done {
+	prev, ok := e.iter.Next()
+	if !ok {
 		var empty KeyValuePair[K, V]
 		return empty, false
 	}
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
+		item, ok := e.iter.Next()
+		if !ok {
 			return prev, true
 		}
 		prev = item
-		if err != nil {
-			var empty KeyValuePair[K, V]
-			e.err = err
-			return empty, false
-		}
 	}
 }
 
@@ -129,8 +93,8 @@ func (e *EnumeratorMap[K, V]) SortBy(sorter func(i, j KeyValuePair[K, V]) bool) 
 func eachMap[K comparable, V any](iter IEnumerableMap[K, V], iteratee func(item KeyValuePair[K, V], index int)) {
 	index := 0
 	for {
-		item, err := iter.Next()
-		if err == Done {
+		item, ok := iter.Next()
+		if !ok {
 			break
 		}
 		iteratee(item, index)
@@ -140,21 +104,15 @@ func eachMap[K comparable, V any](iter IEnumerableMap[K, V], iteratee func(item 
 
 
 func (e *EnumeratorMap[K, V]) Reject(predicate func(item KeyValuePair[K, V], index int) bool) *EnumeratorMap[K, V] {
-	if e.err != nil {
-		return e
-	}
 	e.iter = newSliceEnumerator(lo.Reject(e.ToSlice(), predicate))
 	return e
 }
 
 func (e *EnumeratorMap[K, V]) IsAll(predicate func(item KeyValuePair[K, V]) bool) bool {
-	if e.err != nil {
-		return false
-	}
 	flag := true
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		if !predicate(item) {
@@ -166,13 +124,10 @@ func (e *EnumeratorMap[K, V]) IsAll(predicate func(item KeyValuePair[K, V]) bool
 }
 
 func (e *EnumeratorMap[K, V]) IsAny(predicate func(item KeyValuePair[K, V]) bool) bool {
-	if e.err != nil {
-		return false
-	}
 	flag := false
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		if predicate(item) {
@@ -187,8 +142,8 @@ func (e *EnumeratorMap[K, V]) Take(num int) *EnumeratorMap[K, V] {
 	result := []KeyValuePair[K, V]{}
 	index := 0
 	for {
-		item, err := e.iter.Next()
-		if err == Done {
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		if index >= num {
