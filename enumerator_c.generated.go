@@ -24,7 +24,7 @@ func (e *EnumeratorC[T]) Error() error {
 	return e.err
 }
 
-func (e *EnumeratorC[T]) Each(iteratee func(item T)) *EnumeratorC[T] {
+func (e *EnumeratorC[T]) Each(iteratee func(item T, index int)) *EnumeratorC[T] {
 	if e.err == nil {
 		eachC(e.iter, iteratee)
 	}
@@ -37,7 +37,7 @@ func (e *EnumeratorC[T]) Count() int {
 	if e.err != nil {
 		return v
 	}
-	eachC(e.iter, func(item T) {
+	eachC(e.iter, func(item T, _ int) {
 		v += 1
 	})
 	return v
@@ -120,12 +120,14 @@ func (e *EnumeratorC[T]) SortBy(sorter func(i, j T) bool) *EnumeratorC[T] {
 	return e
 }
 
-func eachC[T comparable](iter IEnumerableC[T], iteratee func(item T)) {
+func eachC[T comparable](iter IEnumerableC[T], iteratee func(item T, index int)) {
+  index := 0
 	for {
 		item, err := iter.Next()
 		if err == Done {
 			break
 		}
-		iteratee(item)
+		iteratee(item, index)
+		index += 1
 	}
 }

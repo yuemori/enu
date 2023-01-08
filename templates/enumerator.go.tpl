@@ -24,7 +24,7 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) Error() error {
 	return e.err
 }
 
-func (e *Enumerator{{.Suffix}}[{{.Type}}]) Each(iteratee func(item {{.Type}})) *Enumerator{{.Suffix}}[{{.Type}}] {
+func (e *Enumerator{{.Suffix}}[{{.Type}}]) Each(iteratee func(item {{.Type}}, index int)) *Enumerator{{.Suffix}}[{{.Type}}] {
 	if e.err == nil {
 		each{{.Suffix}}(e.iter, iteratee)
 	}
@@ -37,7 +37,7 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) Count() int {
 	if e.err != nil {
 		return v
 	}
-	each{{.Suffix}}(e.iter, func(item {{.Type}}) {
+	each{{.Suffix}}(e.iter, func(item {{.Type}}, _ int) {
 		v += 1
 	})
 	return v
@@ -120,12 +120,14 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) SortBy(sorter func(i, j {{.Type}}) bo
 	return e
 }
 
-func each{{.Suffix}}[{{.TypeWithConstraint}}](iter IEnumerable{{.Suffix}}[{{.Type}}], iteratee func(item {{.Type}})) {
+func each{{.Suffix}}[{{.TypeWithConstraint}}](iter IEnumerable{{.Suffix}}[{{.Type}}], iteratee func(item {{.Type}}, index int)) {
+  index := 0
 	for {
 		item, err := iter.Next()
 		if err == Done {
 			break
 		}
-		iteratee(item)
+		iteratee(item, index)
+		index += 1
 	}
 }
