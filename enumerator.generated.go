@@ -63,11 +63,11 @@ func (e *Enumerator[T]) ToSlice() []T {
 	return result
 }
 
-func (e *Enumerator[T]) Filter(predicate func(item T) bool) *Enumerator[T] {
+func (e *Enumerator[T]) Filter(predicate func(item T, index int) bool) *Enumerator[T] {
 	if e.err != nil {
 		return e
 	}
-	e.iter = newSliceEnumerator(lo.Filter(e.ToSlice(), func(item T, _ int) bool { return predicate(item) }))
+	e.iter = newSliceEnumerator(lo.Filter(e.ToSlice(), predicate))
 	return e
 }
 
@@ -121,7 +121,7 @@ func (e *Enumerator[T]) SortBy(sorter func(i, j T) bool) *Enumerator[T] {
 }
 
 func each[T any](iter IEnumerable[T], iteratee func(item T, index int)) {
-  index := 0
+	index := 0
 	for {
 		item, err := iter.Next()
 		if err == Done {

@@ -2,8 +2,8 @@ package enumerator
 
 import "github.com/samber/lo"
 
-func FromMap[K comparable, V any](collection map[K]V) *Enumerator[KeyValuePair[K, V]] {
-	return &Enumerator[KeyValuePair[K, V]]{iter: newMapEnumerator(collection)}
+func FromMap[K comparable, V any](collection map[K]V) *EnumeratorMap[K, V] {
+	return &EnumeratorMap[K, V]{iter: newMapEnumerator(collection)}
 }
 
 type KeyValuePair[K comparable, V any] struct {

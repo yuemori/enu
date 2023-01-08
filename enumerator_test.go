@@ -21,7 +21,7 @@ func TestFilter(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	r := enumerator.FromSlice([]int{1, 2, 3, 4, 5}).Filter(func(i int) bool {
+	r := enumerator.FromSlice([]int{1, 2, 3, 4, 5}).Filter(func(i int, _ int) bool {
 		return i%2 == 0
 	}).ToSlice()
 

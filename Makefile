@@ -1,8 +1,15 @@
+.PHONY: test
+test:
+	go test -v
+
 .PHONY: codegen
-codegen: enumerator.generated.go enumerator_c.generated.go
+codegen: enumerator.generated.go enumerator_comparable.generated.go enumerator_map.generated.go
 
 enumerator.generated.go: $(wildcard templates/*)
-	go run templates/main.go templates/enumerator.go.tpl enumerator.generated.go "T" "T any" ""
+	go run templates/main.go templates/enumerator.go.tpl $@ "T" "T any" "" "T"
 
-enumerator_c.generated.go: $(wildcard templates/*)
-	go run templates/main.go templates/enumerator.go.tpl enumerator_c.generated.go "T" "T comparable" "C"
+enumerator_comparable.generated.go: $(wildcard templates/*)
+	go run templates/main.go templates/enumerator.go.tpl $@ "T" "T comparable" "C" "T"
+
+enumerator_map.generated.go: $(wildcard templates/*)
+	go run templates/main.go templates/enumerator.go.tpl $@ "K, V" "K comparable, V any" "Map" "KeyValuePair[K, V]"

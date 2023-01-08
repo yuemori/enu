@@ -7,7 +7,7 @@ import (
 )
 
 type IEnumerable{{.Suffix}}[{{.TypeWithConstraint}}] interface {
-	Next() ({{.Type}}, error)
+	Next() ({{.ItemType}}, error)
 	Stop()
 }
 
@@ -24,7 +24,7 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) Error() error {
 	return e.err
 }
 
-func (e *Enumerator{{.Suffix}}[{{.Type}}]) Each(iteratee func(item {{.Type}}, index int)) *Enumerator{{.Suffix}}[{{.Type}}] {
+func (e *Enumerator{{.Suffix}}[{{.Type}}]) Each(iteratee func(item {{.ItemType}}, index int)) *Enumerator{{.Suffix}}[{{.Type}}] {
 	if e.err == nil {
 		each{{.Suffix}}(e.iter, iteratee)
 	}
@@ -37,14 +37,14 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) Count() int {
 	if e.err != nil {
 		return v
 	}
-	each{{.Suffix}}(e.iter, func(item {{.Type}}, _ int) {
+	each{{.Suffix}}(e.iter, func(item {{.ItemType}}, _ int) {
 		v += 1
 	})
 	return v
 }
 
-func (e *Enumerator{{.Suffix}}[{{.Type}}]) ToSlice() []{{.Type}} {
-	result := make([]{{.Type}}, 0)
+func (e *Enumerator{{.Suffix}}[{{.Type}}]) ToSlice() []{{.ItemType}} {
+	result := make([]{{.ItemType}}, 0)
 	if e.err != nil {
 		return result
 	}
@@ -63,22 +63,22 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) ToSlice() []{{.Type}} {
 	return result
 }
 
-func (e *Enumerator{{.Suffix}}[{{.Type}}]) Filter(predicate func(item {{.Type}}) bool) *Enumerator{{.Suffix}}[{{.Type}}] {
+func (e *Enumerator{{.Suffix}}[{{.Type}}]) Filter(predicate func(item {{.ItemType}}, index int) bool) *Enumerator{{.Suffix}}[{{.Type}}] {
 	if e.err != nil {
 		return e
 	}
-	e.iter = newSliceEnumerator(lo.Filter(e.ToSlice(), func(item {{.Type}}, _ int) bool { return predicate(item) }))
+	e.iter = newSliceEnumerator(lo.Filter(e.ToSlice(), predicate))
 	return e
 }
 
-func (e *Enumerator{{.Suffix}}[{{.Type}}]) First() ({{.Type}}, bool) {
+func (e *Enumerator{{.Suffix}}[{{.Type}}]) First() ({{.ItemType}}, bool) {
 	if e.err != nil {
-		var empty {{.Type}}
+		var empty {{.ItemType}}
 		return empty, false
 	}
 	item, err := e.iter.Next()
 	if err != nil {
-		var empty {{.Type}}
+		var empty {{.ItemType}}
 		if err != Done {
 			e.err = err
 		}
@@ -87,14 +87,14 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) First() ({{.Type}}, bool) {
 	return item, true
 }
 
-func (e *Enumerator{{.Suffix}}[{{.Type}}]) Last() ({{.Type}}, bool) {
+func (e *Enumerator{{.Suffix}}[{{.Type}}]) Last() ({{.ItemType}}, bool) {
 	if e.err != nil {
-		var empty {{.Type}}
+		var empty {{.ItemType}}
 		return empty, false
 	}
 	prev, err := e.iter.Next()
 	if err == Done {
-		var empty {{.Type}}
+		var empty {{.ItemType}}
 		return empty, false
 	}
 	for {
@@ -104,14 +104,14 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) Last() ({{.Type}}, bool) {
 		}
 		prev = item
 		if err != nil {
-			var empty {{.Type}}
+			var empty {{.ItemType}}
 			e.err = err
 			return empty, false
 		}
 	}
 }
 
-func (e *Enumerator{{.Suffix}}[{{.Type}}]) SortBy(sorter func(i, j {{.Type}}) bool) *Enumerator{{.Suffix}}[{{.Type}}] {
+func (e *Enumerator{{.Suffix}}[{{.Type}}]) SortBy(sorter func(i, j {{.ItemType}}) bool) *Enumerator{{.Suffix}}[{{.Type}}] {
 	res := e.ToSlice()
 	sort.SliceStable(res, func(i, j int) bool {
 		return sorter(res[i], res[j])
@@ -120,8 +120,8 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) SortBy(sorter func(i, j {{.Type}}) bo
 	return e
 }
 
-func each{{.Suffix}}[{{.TypeWithConstraint}}](iter IEnumerable{{.Suffix}}[{{.Type}}], iteratee func(item {{.Type}}, index int)) {
-  index := 0
+func each{{.Suffix}}[{{.TypeWithConstraint}}](iter IEnumerable{{.Suffix}}[{{.Type}}], iteratee func(item {{.ItemType}}, index int)) {
+	index := 0
 	for {
 		item, err := iter.Next()
 		if err == Done {
