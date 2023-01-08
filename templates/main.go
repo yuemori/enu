@@ -17,11 +17,13 @@ func main() {
 		TypeWithConstraint string
 		Suffix             string
 		ItemType           string
+		ImportPkg          string
 	}{
 		Type:               flag.Arg(2),
 		TypeWithConstraint: flag.Arg(3),
 		Suffix:             flag.Arg(4),
 		ItemType:           flag.Arg(5),
+		ImportPkg:          flag.Arg(6),
 	}
 
 	t, err := template.ParseFiles(in)

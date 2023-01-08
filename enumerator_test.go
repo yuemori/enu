@@ -12,7 +12,7 @@ func TestCount(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	r := enumerator.FromSlice([]int{1, 2, 3, 4, 5}).Count()
+	r := enumerator.From([]int{1, 2, 3, 4, 5}).Count()
 
 	is.Equal(5, r)
 }
@@ -21,7 +21,7 @@ func TestFilter(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	r := enumerator.FromSlice([]int{1, 2, 3, 4, 5}).Filter(func(i int, _ int) bool {
+	r := enumerator.From([]int{1, 2, 3, 4, 5}).Filter(func(i int, _ int) bool {
 		return i%2 == 0
 	}).ToSlice()
 
@@ -40,21 +40,21 @@ func TestFirst(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	r1, ok := enumerator.FromSlice([]int{1, 2, 3, 4, 5}).First()
+	r1, ok := enumerator.From([]int{1, 2, 3, 4, 5}).First()
 	is.Equal(true, ok)
 	is.Equal(1, r1)
 
-	r2, ok := enumerator.FromSlice([]int{}).First()
+	r2, ok := enumerator.From([]int{}).First()
 	is.Equal(false, ok)
 	is.Equal(0, r2)
 
 	type dummy struct{}
 
-	r3, ok := enumerator.FromSlice([]dummy{}).First()
+	r3, ok := enumerator.From([]dummy{}).First()
 	is.Equal(false, ok)
 	is.Equal(dummy{}, r3)
 
-	r4, ok := enumerator.FromSlice([]*dummy{}).First()
+	r4, ok := enumerator.From([]*dummy{}).First()
 	is.Equal(false, ok)
 	is.Nil(r4)
 
@@ -69,21 +69,21 @@ func TestLast(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	r1, ok := enumerator.FromSlice([]int{1, 2, 3, 4, 5}).Last()
+	r1, ok := enumerator.From([]int{1, 2, 3, 4, 5}).Last()
 	is.Equal(true, ok)
 	is.Equal(5, r1)
 
-	r2, ok := enumerator.FromSlice([]int{}).Last()
+	r2, ok := enumerator.From([]int{}).Last()
 	is.Equal(false, ok)
 	is.Equal(0, r2)
 
 	type dummy struct{}
 
-	r3, ok := enumerator.FromSlice([]dummy{}).Last()
+	r3, ok := enumerator.From([]dummy{}).Last()
 	is.Equal(false, ok)
 	is.Equal(dummy{}, r3)
 
-	r4, ok := enumerator.FromSlice([]*dummy{}).Last()
+	r4, ok := enumerator.From([]*dummy{}).Last()
 	is.Equal(false, ok)
 	is.Nil(r4)
 
@@ -104,8 +104,24 @@ func TestSortBy(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	r1 := enumerator.FromSlice([]string{"aa", "bbb", "c"}).SortBy(func(i, j string) bool {
+	r1 := enumerator.From([]string{"aa", "bbb", "c"}).SortBy(func(i, j string) bool {
 		return len(i) > len(j)
 	}).ToSlice()
 	is.Equal([]string{"bbb", "aa", "c"}, r1)
+}
+
+func TestReverse(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	r1 := enumerator.From([]int{1, 2, 3}).Reverse().ToSlice()
+	is.Equal([]int{3, 2, 1}, r1)
+}
+
+func TestToMap(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	r1 := enumerator.From([]int{3, 2, 1}).ToMap()
+	is.Equal(map[int]int{0: 3, 1: 2, 2: 1}, r1)
 }

@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"github.com/samber/lo"
+  {{.ImportPkg}}
 )
 
 type IEnumerable{{.Suffix}}[{{.TypeWithConstraint}}] interface {
@@ -109,6 +110,11 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) Last() ({{.ItemType}}, bool) {
 			return empty, false
 		}
 	}
+}
+
+func (e *Enumerator{{.Suffix}}[{{.Type}}]) Reverse() *Enumerator{{.Suffix}}[{{.Type}}] {
+	e.iter = newSliceEnumerator(lo.Reverse(e.ToSlice()))
+	return e
 }
 
 func (e *Enumerator{{.Suffix}}[{{.Type}}]) SortBy(sorter func(i, j {{.ItemType}}) bool) *Enumerator{{.Suffix}}[{{.Type}}] {

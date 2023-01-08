@@ -4,46 +4,47 @@ import (
 	"sort"
 
 	"github.com/samber/lo"
+  
 )
 
-type IEnumerableC[T comparable] interface {
+type IEnumerableComparable[T comparable] interface {
 	Next() (T, error)
 	Stop()
 }
 
-type EnumeratorC[T comparable] struct {
-	iter IEnumerableC[T]
+type EnumeratorComparable[T comparable] struct {
+	iter IEnumerableComparable[T]
 	err  error
 }
 
-func NewC[T comparable](e IEnumerableC[T]) *EnumeratorC[T] {
-	return &EnumeratorC[T]{iter: e}
+func NewComparable[T comparable](e IEnumerableComparable[T]) *EnumeratorComparable[T] {
+	return &EnumeratorComparable[T]{iter: e}
 }
 
-func (e *EnumeratorC[T]) Error() error {
+func (e *EnumeratorComparable[T]) Error() error {
 	return e.err
 }
 
-func (e *EnumeratorC[T]) Each(iteratee func(item T, index int)) *EnumeratorC[T] {
+func (e *EnumeratorComparable[T]) Each(iteratee func(item T, index int)) *EnumeratorComparable[T] {
 	if e.err == nil {
-		eachC(e.iter, iteratee)
+		eachComparable(e.iter, iteratee)
 	}
 
 	return e
 }
 
-func (e *EnumeratorC[T]) Count() int {
+func (e *EnumeratorComparable[T]) Count() int {
 	v := 0
 	if e.err != nil {
 		return v
 	}
-	eachC(e.iter, func(item T, _ int) {
+	eachComparable(e.iter, func(item T, _ int) {
 		v += 1
 	})
 	return v
 }
 
-func (e *EnumeratorC[T]) ToSlice() []T {
+func (e *EnumeratorComparable[T]) ToSlice() []T {
 	result := make([]T, 0)
 	if e.err != nil {
 		return result
@@ -63,7 +64,7 @@ func (e *EnumeratorC[T]) ToSlice() []T {
 	return result
 }
 
-func (e *EnumeratorC[T]) Filter(predicate func(item T, index int) bool) *EnumeratorC[T] {
+func (e *EnumeratorComparable[T]) Filter(predicate func(item T, index int) bool) *EnumeratorComparable[T] {
 	if e.err != nil {
 		return e
 	}
@@ -71,7 +72,7 @@ func (e *EnumeratorC[T]) Filter(predicate func(item T, index int) bool) *Enumera
 	return e
 }
 
-func (e *EnumeratorC[T]) First() (T, bool) {
+func (e *EnumeratorComparable[T]) First() (T, bool) {
 	if e.err != nil {
 		var empty T
 		return empty, false
@@ -87,7 +88,7 @@ func (e *EnumeratorC[T]) First() (T, bool) {
 	return item, true
 }
 
-func (e *EnumeratorC[T]) Last() (T, bool) {
+func (e *EnumeratorComparable[T]) Last() (T, bool) {
 	if e.err != nil {
 		var empty T
 		return empty, false
@@ -111,7 +112,12 @@ func (e *EnumeratorC[T]) Last() (T, bool) {
 	}
 }
 
-func (e *EnumeratorC[T]) SortBy(sorter func(i, j T) bool) *EnumeratorC[T] {
+func (e *EnumeratorComparable[T]) Reverse() *EnumeratorComparable[T] {
+	e.iter = newSliceEnumerator(lo.Reverse(e.ToSlice()))
+	return e
+}
+
+func (e *EnumeratorComparable[T]) SortBy(sorter func(i, j T) bool) *EnumeratorComparable[T] {
 	res := e.ToSlice()
 	sort.SliceStable(res, func(i, j int) bool {
 		return sorter(res[i], res[j])
@@ -120,7 +126,7 @@ func (e *EnumeratorC[T]) SortBy(sorter func(i, j T) bool) *EnumeratorC[T] {
 	return e
 }
 
-func eachC[T comparable](iter IEnumerableC[T], iteratee func(item T, index int)) {
+func eachComparable[T comparable](iter IEnumerableComparable[T], iteratee func(item T, index int)) {
 	index := 0
 	for {
 		item, err := iter.Next()

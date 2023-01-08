@@ -4,47 +4,47 @@ import (
 	"sort"
 
 	"github.com/samber/lo"
-  
+  "golang.org/x/exp/constraints"
 )
 
-type IEnumerable[T any] interface {
+type IEnumerableOrdered[T constraints.Ordered] interface {
 	Next() (T, error)
 	Stop()
 }
 
-type Enumerator[T any] struct {
-	iter IEnumerable[T]
+type EnumeratorOrdered[T constraints.Ordered] struct {
+	iter IEnumerableOrdered[T]
 	err  error
 }
 
-func New[T any](e IEnumerable[T]) *Enumerator[T] {
-	return &Enumerator[T]{iter: e}
+func NewOrdered[T constraints.Ordered](e IEnumerableOrdered[T]) *EnumeratorOrdered[T] {
+	return &EnumeratorOrdered[T]{iter: e}
 }
 
-func (e *Enumerator[T]) Error() error {
+func (e *EnumeratorOrdered[T]) Error() error {
 	return e.err
 }
 
-func (e *Enumerator[T]) Each(iteratee func(item T, index int)) *Enumerator[T] {
+func (e *EnumeratorOrdered[T]) Each(iteratee func(item T, index int)) *EnumeratorOrdered[T] {
 	if e.err == nil {
-		each(e.iter, iteratee)
+		eachOrdered(e.iter, iteratee)
 	}
 
 	return e
 }
 
-func (e *Enumerator[T]) Count() int {
+func (e *EnumeratorOrdered[T]) Count() int {
 	v := 0
 	if e.err != nil {
 		return v
 	}
-	each(e.iter, func(item T, _ int) {
+	eachOrdered(e.iter, func(item T, _ int) {
 		v += 1
 	})
 	return v
 }
 
-func (e *Enumerator[T]) ToSlice() []T {
+func (e *EnumeratorOrdered[T]) ToSlice() []T {
 	result := make([]T, 0)
 	if e.err != nil {
 		return result
@@ -64,7 +64,7 @@ func (e *Enumerator[T]) ToSlice() []T {
 	return result
 }
 
-func (e *Enumerator[T]) Filter(predicate func(item T, index int) bool) *Enumerator[T] {
+func (e *EnumeratorOrdered[T]) Filter(predicate func(item T, index int) bool) *EnumeratorOrdered[T] {
 	if e.err != nil {
 		return e
 	}
@@ -72,7 +72,7 @@ func (e *Enumerator[T]) Filter(predicate func(item T, index int) bool) *Enumerat
 	return e
 }
 
-func (e *Enumerator[T]) First() (T, bool) {
+func (e *EnumeratorOrdered[T]) First() (T, bool) {
 	if e.err != nil {
 		var empty T
 		return empty, false
@@ -88,7 +88,7 @@ func (e *Enumerator[T]) First() (T, bool) {
 	return item, true
 }
 
-func (e *Enumerator[T]) Last() (T, bool) {
+func (e *EnumeratorOrdered[T]) Last() (T, bool) {
 	if e.err != nil {
 		var empty T
 		return empty, false
@@ -112,12 +112,12 @@ func (e *Enumerator[T]) Last() (T, bool) {
 	}
 }
 
-func (e *Enumerator[T]) Reverse() *Enumerator[T] {
+func (e *EnumeratorOrdered[T]) Reverse() *EnumeratorOrdered[T] {
 	e.iter = newSliceEnumerator(lo.Reverse(e.ToSlice()))
 	return e
 }
 
-func (e *Enumerator[T]) SortBy(sorter func(i, j T) bool) *Enumerator[T] {
+func (e *EnumeratorOrdered[T]) SortBy(sorter func(i, j T) bool) *EnumeratorOrdered[T] {
 	res := e.ToSlice()
 	sort.SliceStable(res, func(i, j int) bool {
 		return sorter(res[i], res[j])
@@ -126,7 +126,7 @@ func (e *Enumerator[T]) SortBy(sorter func(i, j T) bool) *Enumerator[T] {
 	return e
 }
 
-func each[T any](iter IEnumerable[T], iteratee func(item T, index int)) {
+func eachOrdered[T constraints.Ordered](iter IEnumerableOrdered[T], iteratee func(item T, index int)) {
 	index := 0
 	for {
 		item, err := iter.Next()

@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"github.com/samber/lo"
+  
 )
 
 type IEnumerableMap[K comparable, V any] interface {
@@ -109,6 +110,11 @@ func (e *EnumeratorMap[K, V]) Last() (KeyValuePair[K, V], bool) {
 			return empty, false
 		}
 	}
+}
+
+func (e *EnumeratorMap[K, V]) Reverse() *EnumeratorMap[K, V] {
+	e.iter = newSliceEnumerator(lo.Reverse(e.ToSlice()))
+	return e
 }
 
 func (e *EnumeratorMap[K, V]) SortBy(sorter func(i, j KeyValuePair[K, V]) bool) *EnumeratorMap[K, V] {
