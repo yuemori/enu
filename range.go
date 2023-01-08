@@ -2,32 +2,32 @@ package enu
 
 import (
 	"sync"
-
-	"golang.org/x/exp/constraints"
 )
 
-func NewRange[T constraints.Integer | constraints.Float](min, max T) *EnumeratorNumeric[T] {
-	return &EnumeratorNumeric[T]{iter: NewRangeEnumerator(min, max, 1)}
+type IComparable[T any] interface {
+	Compare(T) int
+	Value() T
+	Next() IComparable[T]
 }
 
-func NewRangeWithStep[T constraints.Integer | constraints.Float](min, max, step T) *EnumeratorNumeric[T] {
-	return &EnumeratorNumeric[T]{iter: NewRangeEnumerator(min, max, step)}
+func NewRange[T any](min, max IComparable[T]) *Enumerator[T] {
+	return &Enumerator[T]{iter: NewRangeEnumerator(
+		min,
+		max,
+	)}
 }
 
-func NewRangeEnumerator[T constraints.Integer | constraints.Float](min, max T, step T) IEnumerableNumeric[T] {
+func NewRangeEnumerator[T any](min, max IComparable[T]) IEnumerable[T] {
 	return &RangeEnumerator[T]{
-		min:     min,
-		max:     max,
-		current: min,
-		step:    step,
+		min: min,
+		max: max,
 	}
 }
 
-type RangeEnumerator[T constraints.Integer | constraints.Float] struct {
-	min     T
-	max     T
-	current T
-	step    T
+type RangeEnumerator[T any] struct {
+	min     IComparable[T]
+	max     IComparable[T]
+	current IComparable[T]
 	mu      sync.Mutex
 }
 
@@ -40,22 +40,18 @@ func (e *RangeEnumerator[T]) Next() (T, bool) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	if e.max < e.min {
+	if e.min.Compare(e.max.Value()) == 1 {
 		return empty[T](), false
 	}
-	if e.step < 0 {
-		val := e.current
-		if e.current < e.max {
-			return empty[T](), false
-		}
-		e.current -= T(e.step)
-		return val, true
-	} else {
-		if e.max < e.current {
-			return empty[T](), false
-		}
-		val := e.current
-		e.current += T(e.step)
+	if e.current == nil {
+		val := e.min.Value()
+		e.current = e.min.Next()
 		return val, true
 	}
+	if e.current.Compare(e.max.Value()) == 1 {
+		return empty[T](), false
+	}
+	val := e.current.Value()
+	e.current = e.current.Next()
+	return val, true
 }
