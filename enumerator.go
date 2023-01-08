@@ -1,4 +1,4 @@
-package enumerator
+package enu
 
 func From[T any](collection []T) *Enumerator[T] {
 	return New[T](newSliceEnumerator(collection))

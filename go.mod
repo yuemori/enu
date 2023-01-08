@@ -1,4 +1,4 @@
-module github.com/yuemori/enumerator
+module github.com/yuemori/enu
 
 go 1.19
 

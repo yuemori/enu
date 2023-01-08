@@ -1,4 +1,4 @@
-package enumerator
+package enu
 
 import (
 	"github.com/samber/lo"

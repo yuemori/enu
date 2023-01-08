@@ -1,11 +1,11 @@
-package enumerator_test
+package enu_test
 
 import (
 	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	enu "github.com/yuemori/enumerator"
+	"github.com/yuemori/enu"
 )
 
 func TestMap(t *testing.T) {
