@@ -31,6 +31,13 @@ func empty[T any]() T {
 	return empty
 }
 
+func (e *RangeEnumerator[T1, T2]) Stop() {}
+func (e *RangeEnumerator[T1, T2]) Reset() {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.current = e.min
+}
+
 func (e *RangeEnumerator[T1, T2]) Next() (T1, bool) {
 	e.mu.Lock()
 	defer e.mu.Unlock()

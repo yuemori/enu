@@ -8,7 +8,7 @@ func From[T any](collection []T) *Enumerator[T] {
 
 func (e *Enumerator[T]) ToMap() map[int]T {
 	result := map[int]T{}
-	_ = e.Each(func(item T, index int) {
+	e.Each(func(item T, index int) {
 		result[index] = item
 	})
 	return result
@@ -24,6 +24,9 @@ func newSliceEnumerator[T any](collection []T) *sliceEnumerator[T] {
 	return &sliceEnumerator[T]{collection: collection}
 }
 
+func (e *sliceEnumerator[T]) Reset() {
+	e.index = 0
+}
 func (e *sliceEnumerator[T]) Stop() {}
 func (e *sliceEnumerator[T]) Next() (T, bool) {
 	e.mu.Lock()

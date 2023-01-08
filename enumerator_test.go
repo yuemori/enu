@@ -128,9 +128,6 @@ func TestTake(t *testing.T) {
 
 	r3 := enu.From([]int{1, 2, 3, 4, 5}).Take(6).ToSlice()
 	is.Equal([]int{1, 2, 3, 4, 5}, r3)
-
-	r4 := enu.From([]int{1, 2, 3, 4, 5}).Take(-1).ToSlice()
-	is.Equal([]int{}, r4)
 }
 
 func TestIsAll(t *testing.T) {

@@ -4,55 +4,54 @@ import (
 	"sort"
 
 	"github.com/samber/lo"
-  
 )
 
 type IEnumerable[T any] interface {
 	Next() (T, bool)
+	Stop()
+	Reset()
 }
 
 type Enumerator[T any] struct {
-	iter IEnumerable[T]
+	iter      IEnumerable[T]
+	result    []T
+	isStopped bool
 }
 
 func New[T any](e IEnumerable[T]) *Enumerator[T] {
 	return &Enumerator[T]{iter: e}
 }
 
-func (e *Enumerator[T]) Each(iteratee func(item T, index int)) *Enumerator[T] {
-  each(e.iter, iteratee)
-
-	return e
-}
-
 func (e *Enumerator[T]) Count() int {
 	v := 0
-	each(e.iter, func(item T, _ int) {
+	e.Each(func(item T, _ int) {
 		v += 1
 	})
 	return v
 }
 
 func (e *Enumerator[T]) ToSlice() []T {
-	result := make([]T, 0)
-
-	for {
-		item, ok := e.iter.Next()
-		if !ok {
-			break
-		}
-		result = append(result, item)
+	if e.isStopped {
+		return e.result
 	}
-	return result
+	e.Each(func(T, int) {})
+	return e.result
 }
 
 func (e *Enumerator[T]) Filter(predicate func(item T, index int) bool) *Enumerator[T] {
-	e.iter = newSliceEnumerator(lo.Filter(e.ToSlice(), predicate))
+	e.swap(lo.Filter(e.ToSlice(), predicate))
 	return e
 }
 
 func (e *Enumerator[T]) First() (T, bool) {
+	if e.isStopped {
+		if len(e.result) == 0 {
+			return empty[T](), false
+		}
+		return e.result[0], true
+	}
 	item, ok := e.iter.Next()
+	e.iter.Reset()
 	if !ok {
 		var empty T
 		return empty, false
@@ -61,22 +60,15 @@ func (e *Enumerator[T]) First() (T, bool) {
 }
 
 func (e *Enumerator[T]) Last() (T, bool) {
-	prev, ok := e.iter.Next()
-	if !ok {
-		var empty T
-		return empty, false
+	result := e.ToSlice()
+	if len(result) == 0 {
+		return empty[T](), false
 	}
-	for {
-		item, ok := e.iter.Next()
-		if !ok {
-			return prev, true
-		}
-		prev = item
-	}
+	return result[len(result)-1], true
 }
 
 func (e *Enumerator[T]) Reverse() *Enumerator[T] {
-	e.iter = newSliceEnumerator(lo.Reverse(e.ToSlice()))
+	e.swap(lo.Reverse(e.ToSlice()))
 	return e
 }
 
@@ -85,29 +77,57 @@ func (e *Enumerator[T]) SortBy(sorter func(i, j T) bool) *Enumerator[T] {
 	sort.SliceStable(res, func(i, j int) bool {
 		return sorter(res[i], res[j])
 	})
-	e.iter = newSliceEnumerator(res)
+	e.swap(res)
 	return e
 }
 
-func each[T any](iter IEnumerable[T], iteratee func(item T, index int)) {
+func (e *Enumerator[T]) swap(result []T) {
+	if !e.isStopped {
+		e.iter.Stop()
+		e.isStopped = true
+	}
+	e.iter = newSliceEnumerator(result)
+	e.result = result
+}
+
+func (e *Enumerator[T]) Each(iteratee func(item T, index int)) {
+	if e.isStopped {
+		lo.ForEach(e.result, iteratee)
+		return
+	}
+
+	result := []T{}
 	index := 0
 	for {
-		item, ok := iter.Next()
+		item, ok := e.iter.Next()
 		if !ok {
 			break
 		}
 		iteratee(item, index)
 		index += 1
+		result = append(result, item)
 	}
+	e.iter.Stop()
+	e.isStopped = true
+	e.iter = newSliceEnumerator(result)
+	e.result = result
 }
 
-
 func (e *Enumerator[T]) Reject(predicate func(item T, index int) bool) *Enumerator[T] {
-	e.iter = newSliceEnumerator(lo.Reject(e.ToSlice(), predicate))
+	e.swap(lo.Reject(e.ToSlice(), predicate))
 	return e
 }
 
 func (e *Enumerator[T]) IsAll(predicate func(item T) bool) bool {
+	if e.isStopped {
+		for _, item := range e.ToSlice() {
+			if !predicate(item) {
+				return false
+			}
+			return true
+		}
+	}
+
 	flag := true
 	for {
 		item, ok := e.iter.Next()
@@ -119,10 +139,20 @@ func (e *Enumerator[T]) IsAll(predicate func(item T) bool) bool {
 			break
 		}
 	}
+	e.iter.Reset()
 	return flag
 }
 
 func (e *Enumerator[T]) IsAny(predicate func(item T) bool) bool {
+	if e.isStopped {
+		for _, item := range e.ToSlice() {
+			if predicate(item) {
+				return true
+			}
+			return false
+		}
+	}
+
 	flag := false
 	for {
 		item, ok := e.iter.Next()
@@ -134,10 +164,16 @@ func (e *Enumerator[T]) IsAny(predicate func(item T) bool) bool {
 			break
 		}
 	}
+	e.iter.Reset()
 	return flag
 }
 
-func (e *Enumerator[T]) Take(num int) *Enumerator[T] {
+func (e *Enumerator[T]) Take(num uint) *Enumerator[T] {
+	if e.isStopped {
+		e.swap(lo.Subset(e.result, 0, num-1))
+		return e
+	}
+
 	result := []T{}
 	index := 0
 	for {
@@ -145,12 +181,12 @@ func (e *Enumerator[T]) Take(num int) *Enumerator[T] {
 		if !ok {
 			break
 		}
-		if index >= num {
+		if uint(index) >= num {
 			break
 		}
 		result = append(result, item)
 		index += 1
 	}
-	e.iter = newSliceEnumerator(result)
+	e.swap(result)
 	return e
 }
