@@ -26,3 +26,14 @@ func TestContains(t *testing.T) {
 	r2 := enu.FromComparable([]int{1, 1, 2, 3, 3}).Contains(4)
 	is.Equal(false, r2)
 }
+
+func TestIndexOf(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	r1 := enu.FromComparable([]int{1, 1, 2, 3, 3}).IndexOf(2)
+	is.Equal(2, r1)
+
+	r2 := enu.FromComparable([]int{1, 1, 2, 3, 3}).IndexOf(4)
+	is.Equal(-1, r2)
+}

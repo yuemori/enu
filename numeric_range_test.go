@@ -38,7 +38,7 @@ func TestNumericRangeWithFind(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	r, ok := enu.FromNumericRange(1, math.MaxInt).Find(func(i int) bool {
+	r, ok := enu.FromNumericRange(1, math.MaxInt).Find(func(i, _ int) bool {
 		return i > 1000
 	})
 	is.Equal(true, ok)

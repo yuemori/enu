@@ -77,21 +77,33 @@ func (e *EnumeratorNumeric[T]) Nth(index int) (T, bool) {
 	return item, true
 }
 
-func (e *EnumeratorNumeric[T]) Find(predicate func(item T) bool) (T, bool) {
+func (e *EnumeratorNumeric[T]) Find(predicate func(item T, index int) bool) (T, bool) {
 	if e.isStopped {
-		return lo.Find(e.result, predicate)
+		item := empty[T]()
+		ok := false
+		for i, elem := range e.result {
+			if predicate(elem, i) {
+				item = elem
+				ok = true
+				break
+			}
+		}
+		return item, ok
 	}
 
 	result := []T{}
+	index := 0
 	for {
 		item, ok := e.iter.Next()
 		if !ok {
 			break
 		}
-		if predicate(item) {
+		if predicate(item, index) {
 			e.iter.Reset()
 			return item, true
 		}
+		result = append(result, item)
+		index++
 	}
 	e.swap(result)
 	return empty[T](), false

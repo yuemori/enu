@@ -44,22 +44,34 @@ func TestFind(t *testing.T) {
 
 	slices := enu.From([]int{1, 2, 3, 4, 5})
 
-	r1, ok := slices.Find(func(item int) bool {
+	r1, ok := slices.Find(func(item, _ int) bool {
 		return item%2 == 0
 	})
 	is.Equal(true, ok)
 	is.Equal(2, r1)
 
-	r2, ok := slices.Find(func(item int) bool {
+	r2, ok := slices.Find(func(item, _ int) bool {
 		return item%2 == 0
 	})
 	is.Equal(true, ok)
 	is.Equal(2, r2)
 
-	_, ok = slices.Find(func(item int) bool {
+	_, ok = slices.Find(func(item, _ int) bool {
 		return item > 10
 	})
 	is.Equal(false, ok)
+
+	r3, ok := slices.Find(func(item, _ int) bool {
+		return item%2 == 0
+	})
+	is.Equal(true, ok)
+	is.Equal(2, r3)
+
+	r4, ok := slices.Find(func(_, index int) bool {
+		return index == 3
+	})
+	is.Equal(true, ok)
+	is.Equal(4, r4)
 }
 
 func TestNth(t *testing.T) {
@@ -205,4 +217,13 @@ func TestIsAny(t *testing.T) {
 
 	r2 := enu.From([]int{1, 2, 1, 1, 1}).IsAny(func(item int) bool { return item == 2 })
 	is.Equal(true, r2)
+}
+
+func TestGetEnumerator(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	enumerator := enu.FromOrdered([]int{1, 2, 3}).GetEnumerator()
+	r := enu.ToNumeric(enumerator).Sum()
+	is.Equal(6, r)
 }

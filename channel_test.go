@@ -66,7 +66,7 @@ func TestChannelWithFind(t *testing.T) {
 
 	channel := enu.FromChannel(ch)
 
-	r1, ok := channel.Find(func(i int) bool {
+	r1, ok := channel.Find(func(i, _ int) bool {
 		return i == 3
 	})
 	is.Equal(true, ok)
@@ -137,7 +137,7 @@ func TestChannelWithDoneWithFind(t *testing.T) {
 	}()
 
 	channel := enu.FromChannelWithDone(ch, done)
-	r1, ok := channel.Find(func(item int) bool {
+	r1, ok := channel.Find(func(item, _ int) bool {
 		return item == 5
 	})
 	is.Equal(true, ok)

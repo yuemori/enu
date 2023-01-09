@@ -11,25 +11,29 @@ func TestMin(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	r := enu.FromOrdered([]int{2, 1, 3}).Min()
+	r1 := enu.FromOrdered([]int{2, 1, 3}).Min()
+	is.Equal(1, r1)
 
-	is.Equal(1, r)
+	r2 := enu.FromOrdered([]int{}).Min()
+	is.Equal(0, r2)
 }
 
 func TestMax(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	r := enu.FromOrdered([]int{2, 1, 3}).Max()
+	r1 := enu.FromOrdered([]int{2, 1, 3}).Max()
+	is.Equal(3, r1)
 
-	is.Equal(3, r)
+	r2 := enu.FromOrdered([]int{}).Max()
+	is.Equal(0, r2)
 }
 
 func TestSort(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	r := enu.FromOrdered([]int{2, 1, 3}).Sort().ToSlice()
+	r := enu.FromOrdered([]string{"c", "a", "b"}).Sort().ToSlice()
 
-	is.Equal([]int{1, 2, 3}, r)
+	is.Equal([]string{"a", "b", "c"}, r)
 }

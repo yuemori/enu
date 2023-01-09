@@ -65,7 +65,7 @@ func TestRangeFind(t *testing.T) {
 
 	months := enu.FromRange[time.Month, int](Month(time.January), Month(time.December), 1)
 
-	r1, ok := months.Find(func(m time.Month) bool {
+	r1, ok := months.Find(func(m time.Month, _ int) bool {
 		return m == time.October
 	})
 	is.Equal(true, ok)
