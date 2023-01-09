@@ -8,7 +8,7 @@ import (
 )
 
 func FromOrdered[T constraints.Ordered](collection []T) *EnumeratorOrdered[T] {
-	return NewOrdered[T](newSliceEnumerator(collection))
+	return NewOrdered[T](NewSliceEnumerator(collection))
 }
 
 func ToOrdered[T constraints.Ordered](e *Enumerator[T]) *EnumeratorOrdered[T] {

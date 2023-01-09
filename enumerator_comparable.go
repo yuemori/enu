@@ -5,7 +5,7 @@ import (
 )
 
 func FromComparable[T comparable](collection []T) *EnumeratorComparable[T] {
-	return NewComparable[T](newSliceEnumerator(collection))
+	return NewComparable[T](NewSliceEnumerator(collection))
 }
 
 func ToComparable[T comparable](e Enumerator[T]) *EnumeratorComparable[T] {

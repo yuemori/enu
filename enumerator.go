@@ -5,7 +5,7 @@ import (
 )
 
 func From[T any](collection []T) *Enumerator[T] {
-	return New[T](newSliceEnumerator(collection))
+	return New[T](NewSliceEnumerator(collection))
 }
 
 func (e *Enumerator[T]) ToMap() map[int]T {
@@ -16,21 +16,21 @@ func (e *Enumerator[T]) ToMap() map[int]T {
 	return result
 }
 
-type sliceEnumerator[T any] struct {
+type SliceEnumerator[T any] struct {
 	collection []T
 	index      int
 	mu         sync.Mutex
 }
 
-func newSliceEnumerator[T any](collection []T) *sliceEnumerator[T] {
-	return &sliceEnumerator[T]{collection: collection}
+func NewSliceEnumerator[T any](collection []T) *SliceEnumerator[T] {
+	return &SliceEnumerator[T]{collection: collection}
 }
 
-func (e *sliceEnumerator[T]) Reset() {
+func (e *SliceEnumerator[T]) Reset() {
 	e.index = 0
 }
-func (e *sliceEnumerator[T]) Stop() {}
-func (e *sliceEnumerator[T]) Next() (T, bool) {
+func (e *SliceEnumerator[T]) Stop() {}
+func (e *SliceEnumerator[T]) Next() (T, bool) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 

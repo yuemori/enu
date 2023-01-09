@@ -43,7 +43,7 @@ func (e *EnumeratorMap[K, V]) Each(iteratee func(item KeyValuePair[K, V], index 
 	}
 	e.iter.Stop()
 	e.isStopped = true
-	e.iter = newSliceEnumerator(result)
+	e.iter = NewSliceEnumerator(result)
 	e.result = result
 }
 
@@ -222,6 +222,6 @@ func (e *EnumeratorMap[K, V]) swap(result []KeyValuePair[K, V]) {
 		e.iter.Stop()
 		e.isStopped = true
 	}
-	e.iter = newSliceEnumerator(result)
+	e.iter = NewSliceEnumerator(result)
 	e.result = result
 }

@@ -43,7 +43,7 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) Each(iteratee func(item {{.ItemType}}
 	}
 	e.iter.Stop()
 	e.isStopped = true
-	e.iter = newSliceEnumerator(result)
+	e.iter = NewSliceEnumerator(result)
 	e.result = result
 }
 
@@ -222,6 +222,6 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) swap(result []{{.ItemType}}) {
 		e.iter.Stop()
 		e.isStopped = true
 	}
-	e.iter = newSliceEnumerator(result)
+	e.iter = NewSliceEnumerator(result)
 	e.result = result
 }

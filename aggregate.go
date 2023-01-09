@@ -5,7 +5,7 @@ import "github.com/samber/lo"
 func Map[T, R any](collection []T, iteratee func(item T, index int) R) *Enumerator[R] {
 	result := lo.Map(collection, iteratee)
 	return &Enumerator[R]{
-		iter:      newSliceEnumerator(result),
+		iter:      NewSliceEnumerator(result),
 		result:    result,
 		isStopped: true,
 	}

@@ -43,7 +43,7 @@ func (e *EnumeratorComparable[T]) Each(iteratee func(item T, index int)) {
 	}
 	e.iter.Stop()
 	e.isStopped = true
-	e.iter = newSliceEnumerator(result)
+	e.iter = NewSliceEnumerator(result)
 	e.result = result
 }
 
@@ -222,6 +222,6 @@ func (e *EnumeratorComparable[T]) swap(result []T) {
 		e.iter.Stop()
 		e.isStopped = true
 	}
-	e.iter = newSliceEnumerator(result)
+	e.iter = NewSliceEnumerator(result)
 	e.result = result
 }

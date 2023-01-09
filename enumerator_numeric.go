@@ -8,7 +8,7 @@ import (
 )
 
 func FromNumeric[T constraints.Float | constraints.Integer](collection []T) *EnumeratorNumeric[T] {
-	return NewNumeric[T](newSliceEnumerator(collection))
+	return NewNumeric[T](NewSliceEnumerator(collection))
 }
 
 func ToNumeric[T constraints.Float | constraints.Integer](e *Enumerator[T]) *EnumeratorNumeric[T] {

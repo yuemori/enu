@@ -3,7 +3,7 @@ package enu
 import "github.com/samber/lo"
 
 func FromMap[K comparable, V any](collection map[K]V) *EnumeratorMap[K, V] {
-	return &EnumeratorMap[K, V]{iter: newMapEnumerator(collection)}
+	return &EnumeratorMap[K, V]{iter: NewMapEnumerator(collection)}
 }
 
 func ToMap[K comparable, V any](e *Enumerator[KeyValuePair[K, V]]) *EnumeratorMap[K, V] {
@@ -11,7 +11,7 @@ func ToMap[K comparable, V any](e *Enumerator[KeyValuePair[K, V]]) *EnumeratorMa
 		agg[kv.Key] = kv.Value
 		return agg
 	}, map[K]V{})
-	return &EnumeratorMap[K, V]{iter: newMapEnumerator(m)}
+	return &EnumeratorMap[K, V]{iter: NewMapEnumerator(m)}
 }
 
 func (e *EnumeratorMap[K, V]) ToMap() map[K]V {
@@ -39,21 +39,21 @@ type KeyValuePair[K comparable, V any] struct {
 	Value V
 }
 
-type mapEnumerator[K comparable, V any] struct {
+type MapEnumerator[K comparable, V any] struct {
 	collection map[K]V
 	index      int
 	keys       []K
 }
 
-func newMapEnumerator[K comparable, V any](collection map[K]V) *mapEnumerator[K, V] {
-	return &mapEnumerator[K, V]{collection: collection, index: 0, keys: lo.Keys(collection)}
+func NewMapEnumerator[K comparable, V any](collection map[K]V) *MapEnumerator[K, V] {
+	return &MapEnumerator[K, V]{collection: collection, index: 0, keys: lo.Keys(collection)}
 }
 
-func (e *mapEnumerator[K, V]) Reset() {
+func (e *MapEnumerator[K, V]) Reset() {
 	e.index = 0
 }
-func (e *mapEnumerator[K, V]) Stop() {}
-func (e *mapEnumerator[K, V]) Next() (KeyValuePair[K, V], bool) {
+func (e *MapEnumerator[K, V]) Stop() {}
+func (e *MapEnumerator[K, V]) Next() (KeyValuePair[K, V], bool) {
 	if len(e.keys) > e.index {
 		key := e.keys[e.index]
 		value := e.collection[key]
