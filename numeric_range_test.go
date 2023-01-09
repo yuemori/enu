@@ -34,6 +34,17 @@ func TestNumericRange(t *testing.T) {
 	is.Equal([]float64{1, 2, 3}, r7)
 }
 
+func TestNumericRangeWithFind(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	r, ok := enu.NewNumericRange(1, math.MaxInt).Find(func(i int) bool {
+		return i > 1000
+	})
+	is.Equal(true, ok)
+	is.Equal(1001, r)
+}
+
 func TestNumericRangeWithStep(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)

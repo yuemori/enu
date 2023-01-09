@@ -92,7 +92,6 @@ func (e *EnumeratorMap[K, V]) Find(predicate func(item KeyValuePair[K, V]) bool)
 			return item, true
 		}
 	}
-	e.isStopped = true
 	e.swap(result)
 	return empty[KeyValuePair[K, V]](), false
 }
@@ -107,8 +106,6 @@ func (e *EnumeratorMap[K, V]) First() (KeyValuePair[K, V], bool) {
 	item, ok := e.iter.Next()
 	if !ok {
 		e.swap([]KeyValuePair[K, V]{})
-		e.iter.Stop()
-		e.isStopped = true
 		return empty[KeyValuePair[K, V]](), false
 	}
 	e.iter.Reset()
@@ -194,18 +191,18 @@ func (e *EnumeratorMap[K, V]) IsAny(predicate func(item KeyValuePair[K, V]) bool
 
 func (e *EnumeratorMap[K, V]) Take(num uint) *EnumeratorMap[K, V] {
 	if e.isStopped {
-		e.swap(lo.Subset(e.result, 0, num-1))
+		e.swap(lo.Subset(e.result, 0, num))
 		return e
 	}
 
 	result := []KeyValuePair[K, V]{}
 	index := 0
 	for {
-		item, ok := e.iter.Next()
-		if !ok {
+		if uint(index) >= num {
 			break
 		}
-		if uint(index) >= num {
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		result = append(result, item)

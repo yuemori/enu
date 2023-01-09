@@ -10,20 +10,28 @@ func NewGenerator[T any](generator func(index int) (T, bool)) *Generator[T] {
 
 type Generator[T any] struct {
 	generator func(int) (T, bool)
+	generated []T
 	index     int
 }
 
-func (s *Generator[T]) Next() (T, bool) {
-	item, ok := s.generator(s.index)
-	if !ok {
-		return empty[T](), false
+func (g *Generator[T]) Next() (T, bool) {
+	if len(g.generated)-1 < g.index {
+		item, ok := g.generator(g.index)
+		if !ok {
+			return empty[T](), false
+		}
+		g.generated = append(g.generated, item)
+		g.index += 1
+		return item, true
 	}
-	s.index += 1
+
+	item := g.generated[g.index]
+	g.index++
 	return item, true
 }
 
-func (s *Generator[T]) Stop() {}
+func (g *Generator[T]) Stop() {}
 
-func (s *Generator[T]) Reset() {
-	s.index = 0
+func (g *Generator[T]) Reset() {
+	g.index = 0
 }

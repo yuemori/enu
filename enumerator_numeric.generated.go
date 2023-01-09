@@ -92,7 +92,6 @@ func (e *EnumeratorNumeric[T]) Find(predicate func(item T) bool) (T, bool) {
 			return item, true
 		}
 	}
-	e.isStopped = true
 	e.swap(result)
 	return empty[T](), false
 }
@@ -107,8 +106,6 @@ func (e *EnumeratorNumeric[T]) First() (T, bool) {
 	item, ok := e.iter.Next()
 	if !ok {
 		e.swap([]T{})
-		e.iter.Stop()
-		e.isStopped = true
 		return empty[T](), false
 	}
 	e.iter.Reset()
@@ -194,18 +191,18 @@ func (e *EnumeratorNumeric[T]) IsAny(predicate func(item T) bool) bool {
 
 func (e *EnumeratorNumeric[T]) Take(num uint) *EnumeratorNumeric[T] {
 	if e.isStopped {
-		e.swap(lo.Subset(e.result, 0, num-1))
+		e.swap(lo.Subset(e.result, 0, num))
 		return e
 	}
 
 	result := []T{}
 	index := 0
 	for {
-		item, ok := e.iter.Next()
-		if !ok {
+		if uint(index) >= num {
 			break
 		}
-		if uint(index) >= num {
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		result = append(result, item)

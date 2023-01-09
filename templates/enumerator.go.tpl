@@ -92,7 +92,6 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) Find(predicate func(item {{.ItemType}
 			return item, true
 		}
 	}
-	e.isStopped = true
 	e.swap(result)
 	return empty[{{.ItemType}}](), false
 }
@@ -107,8 +106,6 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) First() ({{.ItemType}}, bool) {
 	item, ok := e.iter.Next()
 	if !ok {
 		e.swap([]{{.ItemType}}{})
-		e.iter.Stop()
-		e.isStopped = true
 		return empty[{{.ItemType}}](), false
 	}
 	e.iter.Reset()
@@ -194,18 +191,18 @@ func (e *Enumerator{{.Suffix}}[{{.Type}}]) IsAny(predicate func(item {{.ItemType
 
 func (e *Enumerator{{.Suffix}}[{{.Type}}]) Take(num uint) *Enumerator{{.Suffix}}[{{.Type}}] {
 	if e.isStopped {
-		e.swap(lo.Subset(e.result, 0, num-1))
+		e.swap(lo.Subset(e.result, 0, num))
 		return e
 	}
 
 	result := []{{.ItemType}}{}
 	index := 0
 	for {
-		item, ok := e.iter.Next()
-		if !ok {
+		if uint(index) >= num {
 			break
 		}
-		if uint(index) >= num {
+		item, ok := e.iter.Next()
+		if !ok {
 			break
 		}
 		result = append(result, item)
