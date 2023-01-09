@@ -2,23 +2,23 @@ package enu
 
 import "golang.org/x/exp/constraints"
 
-func NewNumericRange[T constraints.Integer | constraints.Float](min, max T) *Enumerator[T] {
-	return New(
-		NewRange[T, T](
-			Numeric[T]{value: min},
-			Numeric[T]{value: max},
-			T(1),
-		),
-	)
+func FromNumericRange[T constraints.Integer | constraints.Float](min, max T) *Enumerator[T] {
+	return New(NewNumericRange(min, max))
 }
 
-func NewNumericRangeWithStep[T constraints.Integer | constraints.Float](min, max, step T) *Enumerator[T] {
-	return New(
-		NewRange[T, T](
-			Numeric[T]{value: min},
-			Numeric[T]{value: max},
-			step,
-		),
+func NewNumericRange[T constraints.Integer | constraints.Float](min, max T) IEnumerable[T] {
+	return NewNumericRangeWithStep(min, max, T(1))
+}
+
+func FromNumericRangeWithStep[T constraints.Integer | constraints.Float](min, max, step T) *Enumerator[T] {
+	return New[T](NewNumericRangeWithStep(min, max, step))
+}
+
+func NewNumericRangeWithStep[T constraints.Integer | constraints.Float](min, max, step T) *RangeEnumerator[T, T] {
+	return NewRange[T, T](
+		Numeric[T]{value: min},
+		Numeric[T]{value: max},
+		step,
 	)
 }
 

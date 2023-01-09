@@ -38,10 +38,10 @@ func TestRange(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	r1 := enu.New(enu.NewRange[time.Month, int](Month(time.January), Month(time.July), 1)).ToSlice()
+	r1 := enu.FromRange[time.Month, int](Month(time.January), Month(time.July), 1).ToSlice()
 	is.Equal([]time.Month{time.January, time.February, time.March, time.April, time.May, time.June, time.July}, r1)
 
-	r2 := enu.New(enu.NewRange[time.Month, int](Month(time.January), Month(math.MaxInt), 1)).Take(13).ToSlice()
+	r2 := enu.FromRange[time.Month, int](Month(time.January), Month(math.MaxInt), 1).Take(13).ToSlice()
 	is.Equal([]time.Month{
 		time.January,
 		time.February,
@@ -63,7 +63,7 @@ func TestRangeFind(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	months := enu.New(enu.NewRange[time.Month, int](Month(time.January), Month(time.December), 1))
+	months := enu.FromRange[time.Month, int](Month(time.January), Month(time.December), 1)
 
 	r1, ok := months.Find(func(m time.Month) bool {
 		return m == time.October

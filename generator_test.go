@@ -11,18 +11,23 @@ func TestGeneratorFunc(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	n, n1 := 0, 1
-	g := enu.FromFunc(func(index int) (int, bool) {
-		if index == 0 {
-			n, n1 = 0, 1
+	fibonacci := func() func(int) (int, bool) {
+		n, n1 := 0, 1
+		return func(i int) (int, bool) {
+			fn := func(index int) (int, bool) {
+				// Reset variable if index given zero.
+				if index == 0 {
+					n, n1 = 0, 1
+				}
+				v := n
+				n, n1 = n1, n+n1
+				return v, true
+			}
+			return fn(i)
 		}
-		fn := func() int {
-			v := n
-			n, n1 = n1, n+n1
-			return v
-		}
-		return fn(), true
-	})
+	}
+
+	g := enu.FromFunc(fibonacci())
 
 	r1, ok := g.First()
 	is.Equal(true, ok)
@@ -38,4 +43,19 @@ func TestGeneratorFunc(t *testing.T) {
 	r4, ok := g.Last()
 	is.Equal(true, ok)
 	is.Equal(34, r4)
+}
+
+func TestGeneratorLimitedFunc(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	r := enu.FromFunc(func(index int) (int, bool) {
+		if index < 10 {
+			return index * 2, true
+		}
+		// Stop enumerator if returns false.
+		return 0, false
+	}).ToSlice()
+
+	is.Equal([]int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}, r)
 }

@@ -12,7 +12,7 @@ func TestDateRange(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	r1 := enu.NewDateRange(
+	r1 := enu.FromDateRange(
 		time.Date(2023, 5, 20, 21, 59, 59, 0, time.UTC),
 		time.Date(2023, 5, 20, 23, 59, 59, 0, time.UTC),
 		time.Hour,
@@ -23,7 +23,7 @@ func TestDateRange(t *testing.T) {
 		time.Date(2023, 5, 20, 23, 59, 59, 0, time.UTC),
 	}, r1)
 
-	r2 := enu.NewDateRange(
+	r2 := enu.FromDateRange(
 		time.Date(2023, 5, 20, 21, 59, 59, 0, time.UTC),
 		time.Date(2023, 5, 23, 21, 59, 59, 0, time.UTC),
 		time.Hour*24,
@@ -35,7 +35,7 @@ func TestDateRange(t *testing.T) {
 		time.Date(2023, 5, 23, 21, 59, 59, 0, time.UTC),
 	}, r2)
 
-	r3 := enu.NewDateRange(
+	r3 := enu.FromDateRange(
 		time.Date(2023, 5, 20, 21, 59, 59, 0, time.UTC),
 		time.Date(2099, 5, 23, 21, 59, 59, 0, time.UTC),
 		time.Hour*24,
@@ -48,7 +48,7 @@ func TestDateRange(t *testing.T) {
 		time.Date(2023, 5, 24, 21, 59, 59, 0, time.UTC),
 	}, r3)
 
-	r4 := enu.NewDateRange(
+	r4 := enu.FromDateRange(
 		time.Date(2023, 5, 20, 23, 59, 59, 0, time.UTC),
 		time.Date(2023, 5, 20, 21, 59, 59, 0, time.UTC),
 		time.Hour,

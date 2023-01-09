@@ -22,7 +22,9 @@ func NewChannelEnumerator[T any](ch chan (T), done chan (struct{})) *ChannelEnum
 
 func (e *ChannelEnumerator[T]) Stop() {
 	e.done = true
-	go func() { e.doneCh <- struct{}{} }()
+	go func() {
+		e.doneCh <- struct{}{}
+	}()
 }
 
 func (e *ChannelEnumerator[T]) Done() chan (struct{}) {

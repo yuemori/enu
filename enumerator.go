@@ -1,6 +1,8 @@
 package enu
 
-import "sync"
+import (
+	"sync"
+)
 
 func From[T any](collection []T) *Enumerator[T] {
 	return New[T](newSliceEnumerator(collection))

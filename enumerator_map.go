@@ -6,6 +6,14 @@ func FromMap[K comparable, V any](collection map[K]V) *EnumeratorMap[K, V] {
 	return &EnumeratorMap[K, V]{iter: newMapEnumerator(collection)}
 }
 
+func ToMap[K comparable, V any](e *Enumerator[KeyValuePair[K, V]]) *EnumeratorMap[K, V] {
+	m := lo.Reduce(e.ToSlice(), func(agg map[K]V, kv KeyValuePair[K, V], index int) map[K]V {
+		agg[kv.Key] = kv.Value
+		return agg
+	}, map[K]V{})
+	return &EnumeratorMap[K, V]{iter: newMapEnumerator(m)}
+}
+
 func (e *EnumeratorMap[K, V]) ToMap() map[K]V {
 	result := map[K]V{}
 	e.Each(func(kv KeyValuePair[K, V], _ int) {

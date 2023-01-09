@@ -10,7 +10,11 @@ type RangeValuer[T1, T2 any] interface {
 	Next(step T2) RangeValuer[T1, T2]
 }
 
-func NewRange[T1, T2 any](min, max RangeValuer[T1, T2], step T2) IEnumerable[T1] {
+func FromRange[T1, T2 any](min, max RangeValuer[T1, T2], step T2) *Enumerator[T1] {
+	return New[T1](NewRange(min, max, step))
+}
+
+func NewRange[T1, T2 any](min, max RangeValuer[T1, T2], step T2) *RangeEnumerator[T1, T2] {
 	return &RangeEnumerator[T1, T2]{
 		min:  min,
 		max:  max,
