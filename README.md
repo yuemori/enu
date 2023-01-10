@@ -57,6 +57,19 @@ r := enumerator.Count()
 // 3
 ```
 
+### Method chain
+
+`Enumeartors` supports mathod chaining.
+
+example below:
+
+```go
+r := enu.From([]int{1, 2, 3, 4, 5}).Filter(func(i int, _ int) bool {
+  return i%2 != 0
+}).Reverse().ToSlice()
+// []int{5, 3, 1}
+```
+
 ### Lazy Enumeration
 
 Importantly, `Enumerator` postpone enumeration and enumerate values only an as-needed basis.
@@ -566,7 +579,7 @@ Counts the number of elements in the collection.
 ```go
 r1 := enu.From([]int{1, 2, 3, 4}).Filter(func(x int, index int) bool {
     return x%2 == 0
-})
+}).ToSlice()
 // []int{2, 4}
 
 r2 := enu.FromMap(map[int]string{1: "foo", 2: "bar", 3: "baz", 4: "boo"}).Filter(func(kv enu.KeyValuePair[int, string], _ int) bool {
@@ -585,7 +598,7 @@ The opposite of Filter, this method returns the elements of collection that pred
 ```go
 r1 := enu.From([]int{1, 2, 3, 4}).Reject(func(x int, index int) bool {
     return x%2 == 0
-})
+}).ToSlice()
 // []int{1, 3}
 
 r2 := enu.FromMap(map[int]string{1: "foo", 2: "bar", 3: "baz", 4: "boo"}).Reject(func(kv enu.KeyValuePair[int, string], _ int) bool {
@@ -695,7 +708,7 @@ r2, ok := enu.From([]int{}).Last()
 Reverses array so that the first element becomes the last, the second element becomes the second to last, and so on.
 
 ```golang
-r := enu.From([]int{1, 2, 3, 4, 5}).Reverse()
+r := enu.From([]int{1, 2, 3, 4, 5}).Reverse().ToSlice()
 // []int{5, 4, 3, 2, 1}
 ```
 
@@ -709,7 +722,7 @@ r := enu.From([]int{1, 2, 3, 4, 5}).Reverse()
 Sorts the slice x using `res[i] < res[j]` , keeping equal elements in their original order.
 
 ```golang
-r := enu.From([]int{5, 3, 2, 1, 4}).Sort()
+r := enu.From([]int{5, 3, 2, 1, 4}).Sort().ToSlice()
 // []int{1, 2, 3, 4, 5}
 ```
 
