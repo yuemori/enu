@@ -1,9 +1,5 @@
 package enu
 
-import (
-	"sync"
-)
-
 type RangeValuer[T1, T2 any] interface {
 	Compare(T1) int
 	Value() T1
@@ -27,7 +23,6 @@ type RangeEnumerator[T1, T2 any] struct {
 	max     RangeValuer[T1, T2]
 	current RangeValuer[T1, T2]
 	step    T2
-	mu      sync.Mutex
 }
 
 func empty[T any]() T {
@@ -35,17 +30,15 @@ func empty[T any]() T {
 	return empty
 }
 
-func (e *RangeEnumerator[T1, T2]) Stop() {}
 func (e *RangeEnumerator[T1, T2]) Reset() {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	e.current = e.min
+	e.current = nil
+}
+
+func (e *RangeEnumerator[T1, T2]) Stop() {
+	e.current = nil
 }
 
 func (e *RangeEnumerator[T1, T2]) Next() (T1, bool) {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-
 	if e.min.Compare(e.max.Value()) == 1 {
 		return empty[T1](), false
 	}

@@ -1,9 +1,5 @@
 package enu
 
-import (
-	"github.com/samber/lo"
-)
-
 func FromComparable[T comparable](collection []T) *EnumeratorComparable[T] {
 	return NewComparable[T](NewSliceEnumerator(collection))
 }
@@ -23,14 +19,13 @@ func (e *EnumeratorComparable[T]) ToMap() map[int]T {
 }
 
 func (e *EnumeratorComparable[T]) Uniq() *EnumeratorComparable[T] {
-	e.swap(lo.Uniq(e.ToSlice()))
-	return e
+	return &EnumeratorComparable[T]{iter: Uniq(e.iter)}
 }
 
 func (e *EnumeratorComparable[T]) Contains(item T) bool {
-	return lo.Contains(e.ToSlice(), item)
+	return Contains(e.iter, item)
 }
 
 func (e *EnumeratorComparable[T]) IndexOf(item T) int {
-	return lo.IndexOf(e.ToSlice(), item)
+	return IndexOf(e.iter, item)
 }

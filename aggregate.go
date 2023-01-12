@@ -1,16 +1,22 @@
 package enu
 
-import "github.com/samber/lo"
+func Map[T, R any](iter IEnumerable[T], iteratee func(item T, index int) R) *Enumerator[R] {
+	result := []R{}
+	each(iter, func(item T, index int) bool {
+		result = append(result, iteratee(item, index))
+		return true
+	})
 
-func Map[T, R any](collection []T, iteratee func(item T, index int) R) *Enumerator[R] {
-	result := lo.Map(collection, iteratee)
 	return &Enumerator[R]{
-		iter:      NewSliceEnumerator(result),
-		result:    result,
-		isStopped: true,
+		iter: NewSliceEnumerator(result),
 	}
 }
 
-func Reduce[T, R any](collection []T, accumulator func(agg R, item T, index int) R, initial R) R {
-	return lo.Reduce(collection, accumulator, initial)
+func Reduce[T, R any](iter IEnumerable[T], accumulator func(agg R, item T, index int) R, initial R) R {
+	each(iter, func(item T, index int) bool {
+		initial = accumulator(initial, item, index)
+		return true
+	})
+
+	return initial
 }

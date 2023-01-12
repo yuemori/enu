@@ -44,8 +44,8 @@ func Parallel[T any](bufferSize int, funcs ...func() T) chan (T) {
 	return ch
 }
 
-func Retry[T any](bufferSize, maxRetry int, fn func(int) (T, error)) chan (Tuple2[T, bool]) {
-	ch := make(chan (Tuple2[T, bool]), bufferSize)
+func Retry[T any](bufferSize, maxRetry int, fn func(int) (T, error)) chan (Tuple2[T, error]) {
+	ch := make(chan (Tuple2[T, error]), bufferSize)
 
 	go func() {
 		defer close(ch)
@@ -53,11 +53,11 @@ func Retry[T any](bufferSize, maxRetry int, fn func(int) (T, error)) chan (Tuple
 		for {
 			v, err := fn(retry)
 			if err == nil {
-				ch <- Tuple2[T, bool]{v, true}
+				ch <- Tuple2[T, error]{v, nil}
 				break
 			}
 			if maxRetry < retry {
-				ch <- Tuple2[T, bool]{empty[T](), false}
+				ch <- Tuple2[T, error]{empty[T](), err}
 				break
 			}
 			retry++

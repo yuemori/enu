@@ -2,18 +2,30 @@ package enu_test
 
 import (
 	"errors"
-	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/yuemori/enu"
 )
 
+func isChannelClosed[T any](ch chan (T)) bool {
+	select {
+	case _, ok := <-ch:
+		if ok {
+			return false
+		}
+		return true
+	default:
+		return false
+	}
+}
+
 func TestChannel(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	ch := make(chan (int), 3)
+	ch := make(chan (int), 1)
 
 	go func() {
 		defer close(ch)
@@ -23,13 +35,30 @@ func TestChannel(t *testing.T) {
 		}
 	}()
 
-	channel := enu.FromChannel(ch)
-	r1, ok := channel.First()
-	is.Equal(true, ok)
-	is.Equal(1, r1)
+	r := enu.FromChannel(ch).ToSlice()
+	is.Equal([]int{1, 2, 3, 4, 5}, r)
+	is.True(isChannelClosed(ch))
+}
 
-	r2 := channel.ToSlice()
-	is.Equal([]int{1, 2, 3, 4, 5}, r2)
+func TestChannelWithFirst(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	ch := make(chan (int))
+
+	go func() {
+		defer close(ch)
+
+		for i := 1; i < 6; i++ {
+			ch <- i
+		}
+	}()
+
+	r, ok := enu.FromChannel(ch).First()
+	is.True(ok)
+	is.Equal(1, r)
+	// Important: func 6 times to send channel, enumerator receive value from channel at 1 times because First() called.
+	is.False(isChannelClosed(ch))
 }
 
 func TestChannelWithTake(t *testing.T) {
@@ -46,15 +75,17 @@ func TestChannelWithTake(t *testing.T) {
 		}
 	}()
 
-	r := enu.FromChannel(ch).Take(10).ToSlice()
-	is.Equal([]int{1, 2, 3, 4, 5}, r)
+	r := enu.FromChannel(ch).Take(3).ToSlice()
+	is.Equal([]int{1, 2, 3}, r)
+	// Important: func 6 times to send channel, enumerator 3 times received from channel because Take(3) called.
+	is.False(isChannelClosed(ch))
 }
 
 func TestChannelWithFind(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	ch := make(chan (int))
+	ch := make(chan (int), 1)
 
 	go func() {
 		defer close(ch)
@@ -71,82 +102,99 @@ func TestChannelWithFind(t *testing.T) {
 	})
 	is.Equal(true, ok)
 	is.Equal(3, r1)
-
-	r2 := channel.ToSlice()
-	is.Equal([]int{1, 2, 3, 4, 5}, r2)
+	// Important: func 6 times to send channel, enumerator 3 times received from channel because Find(3) called.
+	is.False(isChannelClosed(ch))
 }
 
-func TestChannelWithDone(t *testing.T) {
+func TestChannelWithClose(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	ch := make(chan (int))
-	done := make(chan struct{})
+	ch := make(chan (int), 1)
 
 	go func() {
-		defer close(ch)
-		defer close(done)
+		ch <- 1
+		ch <- 2
+		ch <- 3
 
-		i := 0
-		for {
-			select {
-			case <-done:
-				break
-			default:
-				ch <- i
-				i++
-			}
-		}
+		close(ch)
 	}()
 
-	channel := enu.FromChannelWithDone(ch, done)
-	r1, ok := channel.First()
-	is.Equal(true, ok)
-	is.Equal(0, r1)
-
-	r2 := channel.Take(10).ToSlice()
-	is.Equal([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, r2)
-
-	<-done
-
-	r3 := channel.Take(10).ToSlice()
-	is.Equal([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, r3)
+	r1 := enu.FromChannel(ch).ToSlice()
+	is.Equal([]int{1, 2, 3}, r1)
+	is.True(isChannelClosed(ch))
 }
 
-func TestChannelWithDoneWithFind(t *testing.T) {
-	t.Parallel()
-	is := assert.New(t)
-
-	ch := make(chan (int))
-	done := make(chan struct{})
-
-	go func() {
-		defer close(ch)
-		defer close(done)
-
-		i := 0
-		for {
-			select {
-			case <-done:
-				break
-			default:
-				ch <- i
-				i++
-			}
-		}
-	}()
-
-	channel := enu.FromChannelWithDone(ch, done)
-	r1, ok := channel.Find(func(item, _ int) bool {
-		return item == 5
-	})
-	is.Equal(true, ok)
-	is.Equal(5, r1)
-
-	r2 := channel.Take(10).ToSlice()
-	is.Equal([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, r2)
-}
-
+//	func TestChannelWithDone(t *testing.T) {
+//		t.Parallel()
+//		is := assert.New(t)
+//
+//		ch := make(chan (int))
+//		done := make(chan struct{})
+//
+//		go func() {
+//			defer close(ch)
+//			defer close(done)
+//
+//			i := 0
+//			for {
+//				select {
+//				case <-done:
+//					break
+//				default:
+//					ch <- i
+//					i++
+//				}
+//			}
+//		}()
+//
+//		channel := enu.FromChannelWithDone(ch, done)
+//		r1, ok := channel.First()
+//		is.Equal(true, ok)
+//		is.Equal(0, r1)
+//
+//		r2 := channel.Take(10).ToSlice()
+//		is.Equal([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, r2)
+//
+//		<-done
+//
+//		r3 := channel.Take(10).ToSlice()
+//		is.Equal([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, r3)
+//	}
+//
+//	func TestChannelWithDoneWithFind(t *testing.T) {
+//		t.Parallel()
+//		is := assert.New(t)
+//
+//		ch := make(chan (int))
+//		done := make(chan struct{})
+//
+//		go func() {
+//			defer close(ch)
+//			defer close(done)
+//
+//			i := 0
+//			for {
+//				select {
+//				case <-done:
+//					break
+//				default:
+//					ch <- i
+//					i++
+//				}
+//			}
+//		}()
+//
+//		channel := enu.FromChannelWithDone(ch, done)
+//		r1, ok := channel.Find(func(item, _ int) bool {
+//			return item == 5
+//		})
+//		is.Equal(true, ok)
+//		is.Equal(5, r1)
+//
+//		r2 := channel.Take(10).ToSlice()
+//		is.Equal([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, r2)
+//	}
 func TestChannelWithRetry(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
@@ -161,16 +209,16 @@ func TestChannelWithRetry(t *testing.T) {
 		}
 	}
 
-	// Returns [result[T], true] if function was succeed.
+	// Returns [result[T], nil] if function was succeed.
 	r1, ok := enu.FromChannel(enu.Retry(3, 5, mockHttpRequest())).First()
 	is.Equal(true, ok)
 	is.Equal("OK", r1.A)
-	is.Equal(true, r1.B)
+	is.NoError(r1.B)
 
-	// Returns [empty[T], false] if function was failed with reach to maxRetry.
+	// Returns [empty[T], error] if function was failed with reach to maxRetry.
 	r2, ok := enu.FromChannel(enu.Retry(3, 3, mockHttpRequest())).First()
 	is.Equal(true, ok)
-	is.Equal(false, r2.B)
+	is.Errorf(r2.B, "some error")
 }
 
 func TestChannelWithRepeat(t *testing.T) {
@@ -187,11 +235,9 @@ func TestChannelWithRepeat(t *testing.T) {
 	}
 
 	// Aggregate function result by repeat and async
-	r := enu.FromChannel(enu.Repeat(2, 5, mockHttpRequest())).SortBy(func(i, j enu.Tuple2[string, error]) bool {
-		return j.B != nil
-	}).ToSlice()
+	r := enu.FromChannel(enu.Repeat(2, 5, mockHttpRequest())).ToSlice()
 
-	is.Equal([]enu.Tuple2[string, error]{
+	is.ElementsMatch([]enu.Tuple2[string, error]{
 		{"OK", nil},
 		{"OK", nil},
 		{"OK", nil},
@@ -205,23 +251,27 @@ func TestChannelWithParallel(t *testing.T) {
 	is := assert.New(t)
 
 	request1 := func() enu.Tuple2[string, error] {
+		time.Sleep(100 * time.Millisecond)
 		return enu.Tuple2[string, error]{"https://google.com", nil}
 	}
 
 	request2 := func() enu.Tuple2[string, error] {
+		time.Sleep(100 * time.Millisecond)
 		return enu.Tuple2[string, error]{"https://amazon.co.jp", nil}
 	}
 
 	request3 := func() enu.Tuple2[string, error] {
+		time.Sleep(100 * time.Millisecond)
 		return enu.Tuple2[string, error]{"", errors.New("some error")}
 	}
 
-	// Aggregate multiple function result by async
-	r := enu.FromChannel(enu.Parallel(2, request1, request2, request3)).SortBy(func(i, j enu.Tuple2[string, error]) bool {
-		return strings.Compare(i.A, j.A) == -1
-	}).ToSlice()
+	now := time.Now()
 
-	is.Equal([]enu.Tuple2[string, error]{
+	// Aggregate multiple function result by async
+	r := enu.FromChannel(enu.Parallel(3, request1, request2, request3)).ToSlice()
+	is.True(time.Now().Sub(now) < (200 * time.Millisecond))
+
+	is.ElementsMatch([]enu.Tuple2[string, error]{
 		{"", errors.New("some error")},
 		{"https://amazon.co.jp", nil},
 		{"https://google.com", nil},

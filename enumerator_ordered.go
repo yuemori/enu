@@ -1,8 +1,6 @@
 package enu
 
 import (
-	"sort"
-
 	"github.com/samber/lo"
 	"golang.org/x/exp/constraints"
 )
@@ -34,23 +32,17 @@ func (e *EnumeratorOrdered[T]) Max() T {
 }
 
 func (e *EnumeratorOrdered[T]) Sort() *EnumeratorOrdered[T] {
-	res := e.ToSlice()
-	sort.SliceStable(res, func(i, j int) bool {
-		return res[i] < res[j]
-	})
-	e.swap(res)
-	return e
+	return &EnumeratorOrdered[T]{iter: Sort(e.iter)}
 }
 
 func (e *EnumeratorOrdered[T]) Uniq() *EnumeratorOrdered[T] {
-	e.swap(lo.Uniq(e.ToSlice()))
-	return e
+	return &EnumeratorOrdered[T]{iter: Uniq(e.iter)}
 }
 
 func (e *EnumeratorOrdered[T]) Contains(item T) bool {
-	return lo.Contains(e.ToSlice(), item)
+	return Contains(e.iter, item)
 }
 
 func (e *EnumeratorOrdered[T]) IndexOf(item T) int {
-	return lo.IndexOf(e.ToSlice(), item)
+	return IndexOf(e.iter, item)
 }

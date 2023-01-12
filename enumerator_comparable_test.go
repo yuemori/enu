@@ -12,8 +12,10 @@ func TestUniq(t *testing.T) {
 	is := assert.New(t)
 
 	r := enu.FromComparable([]int{1, 1, 2, 3, 3}).Uniq().ToSlice()
-
 	is.Equal([]int{1, 2, 3}, r)
+
+	r2 := enu.FromComparable([]int{1, 1, 2, 3, 3}).Take(4).Uniq().ToSlice()
+	is.Equal([]int{1, 2, 3}, r2)
 }
 
 func TestContains(t *testing.T) {

@@ -1,9 +1,6 @@
 package enu
 
 import (
-	"sort"
-
-	"github.com/samber/lo"
 	"golang.org/x/exp/constraints"
 )
 
@@ -26,35 +23,29 @@ func (e *EnumeratorNumeric[T]) ToMap() map[int]T {
 }
 
 func (e *EnumeratorNumeric[T]) Min() T {
-	return lo.Min(e.ToSlice())
+	return Min(e.iter)
 }
 
 func (e *EnumeratorNumeric[T]) Max() T {
-	return lo.Max(e.ToSlice())
-}
-
-func (e *EnumeratorNumeric[T]) Sort() *EnumeratorNumeric[T] {
-	res := e.ToSlice()
-	sort.SliceStable(res, func(i, j int) bool {
-		return res[i] < res[j]
-	})
-	e.swap(res)
-	return e
+	return Max(e.iter)
 }
 
 func (e *EnumeratorNumeric[T]) Sum() T {
-	return lo.Sum(e.ToSlice())
+	return Sum(e.iter)
+}
+
+func (e *EnumeratorNumeric[T]) Sort() *EnumeratorNumeric[T] {
+	return &EnumeratorNumeric[T]{iter: Sort(e.iter)}
 }
 
 func (e *EnumeratorNumeric[T]) Uniq(item T) *EnumeratorNumeric[T] {
-	e.swap(lo.Uniq(e.ToSlice()))
-	return e
+	return &EnumeratorNumeric[T]{iter: Uniq(e.iter)}
 }
 
 func (e *EnumeratorNumeric[T]) Contains(item T) bool {
-	return lo.Contains(e.ToSlice(), item)
+	return Contains(e.iter, item)
 }
 
 func (e *EnumeratorNumeric[T]) IndexOf(item T) int {
-	return lo.IndexOf(e.ToSlice(), item)
+	return IndexOf(e.iter, item)
 }

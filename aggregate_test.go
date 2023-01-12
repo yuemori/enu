@@ -12,7 +12,7 @@ func TestMap(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	r := enu.Map([]int{1, 2, 3}, func(e, i int) string {
+	r := enu.Map[int](enu.NewSliceEnumerator([]int{1, 2, 3}), func(e, i int) string {
 		return strconv.Itoa(e)
 	}).ToSlice()
 
