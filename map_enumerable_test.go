@@ -65,7 +65,7 @@ func TestEnumeratorToMap(t *testing.T) {
 		{Key: 2, Value: "bar"},
 		{Key: 3, Value: "baz"},
 	})
-	r := enu.ToMap(e).Keys()
+	r := enu.ToMap[int, string](e).Keys()
 
 	is.ElementsMatch([]int{1, 2, 3}, r)
 }

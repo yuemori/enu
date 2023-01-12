@@ -3,7 +3,6 @@ package enu
 import (
 	"sort"
 
-	"github.com/samber/lo"
 	"golang.org/x/exp/constraints"
 )
 
@@ -32,6 +31,15 @@ func each[T any](enumerable IEnumerable[T], iteratee func(item T, index int) boo
 }
 
 func Nth[T any](e IEnumerable[T], nth int) (T, bool) {
+	if nth < 0 {
+		collection := ToSlice(e)
+		l := len(collection)
+		if l < -nth {
+			return empty[T](), false
+		}
+		return collection[l+nth], true
+	}
+
 	iter := e.GetEnumerator()
 	defer iter.Reset()
 
@@ -91,15 +99,23 @@ func Last[T any](e IEnumerable[T]) (T, bool) {
 
 func ToSlice[T any](e IEnumerable[T]) []T {
 	result := make([]T, 0)
-	each(e, func(item T, _ int) bool {
+	Each(e, func(item T, _ int) {
 		result = append(result, item)
-		return true
 	})
 	return result
 }
 
 func Reverse[T any](e IEnumerable[T]) *SliceEnumerator[T] {
-	return NewSliceEnumerator(lo.Reverse(ToSlice(e)))
+	collection := ToSlice(e)
+	length := len(collection)
+	half := length / 2
+
+	for i := 0; i < half; i = i + 1 {
+		j := length - 1 - i
+		collection[i], collection[j] = collection[j], collection[i]
+	}
+
+	return NewSliceEnumerator(collection)
 }
 
 func Sort[T constraints.Ordered](e IEnumerable[T]) *SliceEnumerator[T] {
@@ -119,19 +135,57 @@ func SortBy[T any](e IEnumerable[T], sorter func(i, j T) bool) *SliceEnumerator[
 }
 
 func Sum[T constraints.Integer | constraints.Float | constraints.Complex](e IEnumerable[T]) T {
-	return lo.Sum(ToSlice(e))
+	var sum T = 0
+	for _, val := range ToSlice(e) {
+		sum += val
+	}
+	return sum
 }
 
 func Min[T constraints.Ordered](e IEnumerable[T]) T {
-	return lo.Min(ToSlice(e))
+	var min T
+	collection := ToSlice(e)
+	if len(collection) == 0 {
+		return empty[T]()
+	}
+	min = collection[0]
+	for _, item := range collection {
+		if min > item {
+			min = item
+		}
+	}
+	return min
 }
 
 func Max[T constraints.Ordered](e IEnumerable[T]) T {
-	return lo.Max(ToSlice(e))
+	var max T
+	collection := ToSlice(e)
+	if len(collection) == 0 {
+		return empty[T]()
+	}
+	max = collection[0]
+	for _, item := range collection {
+		if max < item {
+			max = item
+		}
+	}
+	return max
 }
 
 func Uniq[T comparable](e IEnumerable[T]) *SliceEnumerator[T] {
-	return NewSliceEnumerator(lo.Uniq(ToSlice(e)))
+	collection := ToSlice(e)
+	result := make([]T, 0, len(collection))
+	seen := make(map[T]struct{}, len(collection))
+
+	for _, item := range collection {
+		if _, ok := seen[item]; ok {
+			continue
+		}
+		result = append(result, item)
+		seen[item] = struct{}{}
+	}
+
+	return NewSliceEnumerator(result)
 }
 
 func Contains[T comparable](e IEnumerable[T], element T) bool {
@@ -186,22 +240,22 @@ func IsAny[T any](e IEnumerable[T], predicate func(item T) bool) bool {
 	return flag
 }
 
-func Filter[T any](e IEnumerable[T], predicate func(item T, index int) bool) *FilterEnumerator[T] {
-	return &FilterEnumerator[T]{
+func Filter[T any](e IEnumerable[T], predicate func(item T, index int) bool) *FilterEnumerable[T] {
+	return &FilterEnumerable[T]{
 		iter:      e.GetEnumerator(),
 		predicate: predicate,
 	}
 }
 
-func Reject[T any](e IEnumerable[T], predicate func(item T, index int) bool) *RejectEnumerator[T] {
-	return &RejectEnumerator[T]{
+func Reject[T any](e IEnumerable[T], predicate func(item T, index int) bool) *RejectEnumerable[T] {
+	return &RejectEnumerable[T]{
 		iter:      e.GetEnumerator(),
 		predicate: predicate,
 	}
 }
 
-func Take[T any](e IEnumerable[T], size uint) *TakeEnumerator[T] {
-	return &TakeEnumerator[T]{
+func Take[T any](e IEnumerable[T], size uint) *TakeEnumerable[T] {
+	return &TakeEnumerable[T]{
 		iter: e.GetEnumerator(),
 		size: size,
 	}

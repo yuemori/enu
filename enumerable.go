@@ -11,6 +11,10 @@ func (e *Enumerable[T]) ToMap() map[int]T {
 	}, map[int]T{})
 }
 
+func (e *Enumerable[T]) Aggregate(accumulator func(agg []T, item T, index int) []T) []T {
+	return Reduce[T](e, accumulator, []T{})
+}
+
 type IEnumerable[T any] interface {
 	GetEnumerator() Enumerator[T]
 }

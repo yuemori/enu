@@ -5,7 +5,7 @@ func FromMap[K comparable, V any](collection map[K]V) *MapEnumerable[K, V] {
 }
 
 func ToMap[K comparable, V any](e IEnumerable[KeyValuePair[K, V]]) *MapEnumerable[K, V] {
-	m := Reduce[KeyValuePair[K, V]](e, func(agg map[K]V, kv KeyValuePair[K, V], index int) map[K]V {
+	m := Reduce(e, func(agg map[K]V, kv KeyValuePair[K, V], index int) map[K]V {
 		agg[kv.Key] = kv.Value
 		return agg
 	}, map[K]V{})

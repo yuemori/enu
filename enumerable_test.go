@@ -90,10 +90,13 @@ func TestNth(t *testing.T) {
 
 	_, ok = slices.Nth(5)
 	is.Equal(false, ok)
-	//
-	// r3, ok := slices.Nth(-1)
-	// is.Equal(true, ok)
-	// is.Equal(5, r3)
+
+	r3, ok := slices.Nth(-1)
+	is.Equal(true, ok)
+	is.Equal(5, r3)
+
+	_, ok = slices.Nth(-6)
+	is.Equal(false, ok)
 }
 
 func TestFirst(t *testing.T) {
