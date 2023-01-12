@@ -75,3 +75,38 @@ func (e *NumericEnumerable[T]) Take(num uint) *NumericEnumerable[T] {
 func (e *NumericEnumerable[T]) GetEnumerator() Enumerator[T] {
 	return e.enumerator
 }
+
+func (e *NumericEnumerable[T]) Contains(item T) bool {
+	return Contains[T](e, item)
+}
+
+func (e *NumericEnumerable[T]) IndexOf(item T) int {
+	return IndexOf[T](e, item)
+}
+
+func (e *NumericEnumerable[T]) Max() T {
+	return Max[T](e)
+}
+
+func (e *NumericEnumerable[T]) Min() T {
+	return Min[T](e)
+}
+
+func (e *NumericEnumerable[T]) Sort() *NumericEnumerable[T] {
+	return NewNumeric[T](Sort[T](e))
+}
+
+func (e *NumericEnumerable[T]) Sum() T {
+	return Sum[T](e)
+}
+
+func (e *NumericEnumerable[T]) ToMap() map[int]T {
+	return Reduce[T](e, func(agg map[int]T, item T, index int) map[int]T {
+		agg[index] = item
+		return agg
+	}, map[int]T{})
+}
+
+func (e *NumericEnumerable[T]) Uniq() *NumericEnumerable[T] {
+	return NewNumeric[T](Uniq[T](e))
+}

@@ -75,3 +75,34 @@ func (e *OrderedEnumerable[T]) Take(num uint) *OrderedEnumerable[T] {
 func (e *OrderedEnumerable[T]) GetEnumerator() Enumerator[T] {
 	return e.enumerator
 }
+
+func (e *OrderedEnumerable[T]) Contains(item T) bool {
+	return Contains[T](e, item)
+}
+
+func (e *OrderedEnumerable[T]) IndexOf(item T) int {
+	return IndexOf[T](e, item)
+}
+
+func (e *OrderedEnumerable[T]) Max() T {
+	return Max[T](e)
+}
+
+func (e *OrderedEnumerable[T]) Min() T {
+	return Min[T](e)
+}
+
+func (e *OrderedEnumerable[T]) Sort() *OrderedEnumerable[T] {
+	return NewOrdered[T](Sort[T](e))
+}
+
+func (e *OrderedEnumerable[T]) ToMap() map[int]T {
+	return Reduce[T](e, func(agg map[int]T, item T, index int) map[int]T {
+		agg[index] = item
+		return agg
+	}, map[int]T{})
+}
+
+func (e *OrderedEnumerable[T]) Uniq() *OrderedEnumerable[T] {
+	return NewOrdered[T](Uniq[T](e))
+}

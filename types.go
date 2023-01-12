@@ -1,5 +1,11 @@
 package enu
 
+// KeyValuePair is key and value pair.
+type KeyValuePair[K comparable, V any] struct {
+	Key   K
+	Value V
+}
+
 // Tuple2 is a group of 2 elements (pair).
 type Tuple2[A any, B any] struct {
 	A A

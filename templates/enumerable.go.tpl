@@ -77,3 +77,33 @@ func (e *{{.Prefix}}Enumerable[{{.Type}}]) Take(num uint) *{{.Prefix}}Enumerable
 func (e *{{.Prefix}}Enumerable[{{.Type}}]) GetEnumerator() Enumerator[{{.ItemType}}] {
 	return e.enumerator
 }
+{{ range $i, $e := .Extras -}}
+{{ if or (eq $e "Uniq") (eq $e "Sort") }}
+func (e *{{$.Prefix}}Enumerable[{{$.Type}}]) {{$e}}() *{{$.Prefix}}Enumerable[{{$.ItemType}}] {
+	return New{{$.Prefix}}[{{$.Type}}]({{$e}}[{{$.ItemType}}](e))
+}
+{{end -}}
+{{ if or (eq $e "Min") (eq $e "Max") (eq $e "Sum") }}
+func (e *{{$.Prefix}}Enumerable[{{$.Type}}]) {{$e}}() {{$.ItemType}} {
+	return {{$e}}[{{$.Type}}](e)
+}
+{{end -}}
+{{ if eq $e "Contains" }}
+func (e *{{$.Prefix}}Enumerable[{{$.Type}}]) Contains(item {{$.ItemType}}) bool {
+	return Contains[{{$.ItemType}}](e, item)
+}
+{{end -}}
+{{ if eq $e "IndexOf" }}
+func (e *{{$.Prefix}}Enumerable[{{$.Type}}]) IndexOf(item {{$.ItemType}}) int {
+	return IndexOf[{{$.ItemType}}](e, item)
+}
+{{end -}}
+{{ if eq $e "ToMap" }}
+func (e *{{$.Prefix}}Enumerable[{{$.Type}}]) ToMap() map[int]{{$.ItemType}} {
+	return Reduce[{{$.ItemType}}](e, func(agg map[int]{{$.ItemType}}, item {{$.ItemType}}, index int) map[int]{{$.ItemType}} {
+		agg[index] = item
+		return agg
+	}, map[int]{{$.ItemType}}{})
+}
+{{end -}}
+{{end -}}

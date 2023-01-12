@@ -73,3 +73,22 @@ func (e *ComparerEnumerable[T]) Take(num uint) *ComparerEnumerable[T] {
 func (e *ComparerEnumerable[T]) GetEnumerator() Enumerator[T] {
 	return e.enumerator
 }
+
+func (e *ComparerEnumerable[T]) Contains(item T) bool {
+	return Contains[T](e, item)
+}
+
+func (e *ComparerEnumerable[T]) IndexOf(item T) int {
+	return IndexOf[T](e, item)
+}
+
+func (e *ComparerEnumerable[T]) ToMap() map[int]T {
+	return Reduce[T](e, func(agg map[int]T, item T, index int) map[int]T {
+		agg[index] = item
+		return agg
+	}, map[int]T{})
+}
+
+func (e *ComparerEnumerable[T]) Uniq() *ComparerEnumerable[T] {
+	return NewComparer[T](Uniq[T](e))
+}
