@@ -4,8 +4,8 @@ import (
 	"time"
 )
 
-func FromDateRange(start, end time.Time, stepDuration time.Duration) *Enumerator[time.Time] {
-	return &Enumerator[time.Time]{iter: NewDateRange(start, end, stepDuration)}
+func FromDateRange(start, end time.Time, stepDuration time.Duration) *Enumerable[time.Time] {
+	return New[time.Time](NewDateRange(start, end, stepDuration))
 }
 
 func NewDateRange(start, end time.Time, stepDuration time.Duration) *RangeEnumerator[time.Time, time.Duration] {

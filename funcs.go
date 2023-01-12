@@ -7,14 +7,15 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-func Each[T any](iter IEnumerable[T], iteratee func(item T, index int)) {
-	each(iter, func(item T, index int) bool {
+func Each[T any](e IEnumerable[T], iteratee func(item T, index int)) {
+	each(e, func(item T, index int) bool {
 		iteratee(item, index)
 		return true
 	})
 }
 
-func each[T any](iter IEnumerable[T], iteratee func(item T, index int) bool) {
+func each[T any](enumerable IEnumerable[T], iteratee func(item T, index int) bool) {
+	iter := enumerable.GetEnumerator()
 	defer iter.Stop()
 
 	index := 0
@@ -30,7 +31,8 @@ func each[T any](iter IEnumerable[T], iteratee func(item T, index int) bool) {
 	}
 }
 
-func Nth[T any](iter IEnumerable[T], nth int) (T, bool) {
+func Nth[T any](e IEnumerable[T], nth int) (T, bool) {
+	iter := e.GetEnumerator()
 	defer iter.Reset()
 
 	index := 0
@@ -46,18 +48,18 @@ func Nth[T any](iter IEnumerable[T], nth int) (T, bool) {
 	}
 }
 
-func Count[T any](iter IEnumerable[T]) int {
+func Count[T any](e IEnumerable[T]) int {
 	v := 0
-	Each(iter, func(item T, _ int) {
+	Each(e, func(item T, _ int) {
 		v += 1
 	})
 	return v
 }
 
-func Find[T any](iter IEnumerable[T], predicate func(T, int) bool) (T, bool) {
+func Find[T any](e IEnumerable[T], predicate func(T, int) bool) (T, bool) {
 	result := empty[T]()
 	ok := false
-	each(iter, func(item T, index int) bool {
+	each(e, func(item T, index int) bool {
 		if predicate(item, index) {
 			result = item
 			ok = true
@@ -68,7 +70,8 @@ func Find[T any](iter IEnumerable[T], predicate func(T, int) bool) (T, bool) {
 	return result, ok
 }
 
-func First[T any](iter IEnumerable[T]) (T, bool) {
+func First[T any](e IEnumerable[T]) (T, bool) {
+	iter := e.GetEnumerator()
 	defer iter.Reset()
 
 	item, ok := iter.Next()
@@ -78,62 +81,62 @@ func First[T any](iter IEnumerable[T]) (T, bool) {
 	return item, true
 }
 
-func Last[T any](iter IEnumerable[T]) (T, bool) {
-	result := ToSlice(iter)
+func Last[T any](e IEnumerable[T]) (T, bool) {
+	result := ToSlice(e)
 	if len(result) == 0 {
 		return empty[T](), false
 	}
 	return result[len(result)-1], true
 }
 
-func ToSlice[T any](iter IEnumerable[T]) []T {
+func ToSlice[T any](e IEnumerable[T]) []T {
 	result := make([]T, 0)
-	each(iter, func(item T, _ int) bool {
+	each(e, func(item T, _ int) bool {
 		result = append(result, item)
 		return true
 	})
 	return result
 }
 
-func Reverse[T any](iter IEnumerable[T]) *SliceEnumerator[T] {
-	return NewSliceEnumerator(lo.Reverse(ToSlice(iter)))
+func Reverse[T any](e IEnumerable[T]) *SliceEnumerator[T] {
+	return NewSliceEnumerator(lo.Reverse(ToSlice(e)))
 }
 
-func Sort[T constraints.Ordered](iter IEnumerable[T]) *SliceEnumerator[T] {
-	res := ToSlice(iter)
+func Sort[T constraints.Ordered](e IEnumerable[T]) *SliceEnumerator[T] {
+	res := ToSlice(e)
 	sort.SliceStable(res, func(i, j int) bool {
 		return res[i] < res[j]
 	})
 	return NewSliceEnumerator(res)
 }
 
-func SortBy[T any](iter IEnumerable[T], sorter func(i, j T) bool) *SliceEnumerator[T] {
-	res := ToSlice(iter)
+func SortBy[T any](e IEnumerable[T], sorter func(i, j T) bool) *SliceEnumerator[T] {
+	res := ToSlice(e)
 	sort.SliceStable(res, func(i, j int) bool {
 		return sorter(res[i], res[j])
 	})
 	return NewSliceEnumerator(res)
 }
 
-func Sum[T constraints.Integer | constraints.Float | constraints.Complex](iter IEnumerable[T]) T {
-	return lo.Sum(ToSlice(iter))
+func Sum[T constraints.Integer | constraints.Float | constraints.Complex](e IEnumerable[T]) T {
+	return lo.Sum(ToSlice(e))
 }
 
-func Min[T constraints.Ordered](iter IEnumerable[T]) T {
-	return lo.Min(ToSlice(iter))
+func Min[T constraints.Ordered](e IEnumerable[T]) T {
+	return lo.Min(ToSlice(e))
 }
 
-func Max[T constraints.Ordered](iter IEnumerable[T]) T {
-	return lo.Max(ToSlice(iter))
+func Max[T constraints.Ordered](e IEnumerable[T]) T {
+	return lo.Max(ToSlice(e))
 }
 
-func Uniq[T comparable](iter IEnumerable[T]) *SliceEnumerator[T] {
-	return NewSliceEnumerator(lo.Uniq(ToSlice(iter)))
+func Uniq[T comparable](e IEnumerable[T]) *SliceEnumerator[T] {
+	return NewSliceEnumerator(lo.Uniq(ToSlice(e)))
 }
 
-func Contains[T comparable](iter IEnumerable[T], element T) bool {
+func Contains[T comparable](e IEnumerable[T], element T) bool {
 	ok := false
-	each(iter, func(item T, _ int) bool {
+	each(e, func(item T, _ int) bool {
 		if item == element {
 			ok = true
 			return false
@@ -143,9 +146,9 @@ func Contains[T comparable](iter IEnumerable[T], element T) bool {
 	return ok
 }
 
-func IndexOf[T comparable](iter IEnumerable[T], element T) int {
+func IndexOf[T comparable](e IEnumerable[T], element T) int {
 	i := -1
-	each(iter, func(item T, index int) bool {
+	each(e, func(item T, index int) bool {
 		if item == element {
 			i = index
 			return false
@@ -155,10 +158,10 @@ func IndexOf[T comparable](iter IEnumerable[T], element T) int {
 	return i
 }
 
-func IsAll[T any](iter IEnumerable[T], predicate func(item T) bool) bool {
+func IsAll[T any](e IEnumerable[T], predicate func(item T) bool) bool {
 	flag := true
 
-	each(iter, func(item T, _ int) bool {
+	each(e, func(item T, _ int) bool {
 		if !predicate(item) {
 			flag = false
 			return false
@@ -169,10 +172,10 @@ func IsAll[T any](iter IEnumerable[T], predicate func(item T) bool) bool {
 	return flag
 }
 
-func IsAny[T any](iter IEnumerable[T], predicate func(item T) bool) bool {
+func IsAny[T any](e IEnumerable[T], predicate func(item T) bool) bool {
 	flag := false
 
-	each(iter, func(item T, _ int) bool {
+	each(e, func(item T, _ int) bool {
 		if predicate(item) {
 			flag = true
 			return false
@@ -183,23 +186,23 @@ func IsAny[T any](iter IEnumerable[T], predicate func(item T) bool) bool {
 	return flag
 }
 
-func Filter[T any](iter IEnumerable[T], predicate func(item T, index int) bool) *FilterEnumerator[T] {
+func Filter[T any](e IEnumerable[T], predicate func(item T, index int) bool) *FilterEnumerator[T] {
 	return &FilterEnumerator[T]{
-		iter:      iter,
+		iter:      e.GetEnumerator(),
 		predicate: predicate,
 	}
 }
 
-func Reject[T any](iter IEnumerable[T], predicate func(item T, index int) bool) *RejectEnumerator[T] {
+func Reject[T any](e IEnumerable[T], predicate func(item T, index int) bool) *RejectEnumerator[T] {
 	return &RejectEnumerator[T]{
-		iter:      iter,
+		iter:      e.GetEnumerator(),
 		predicate: predicate,
 	}
 }
 
-func Take[T any](iter IEnumerable[T], size uint) *TakeEnumerator[T] {
+func Take[T any](e IEnumerable[T], size uint) *TakeEnumerator[T] {
 	return &TakeEnumerator[T]{
-		iter: iter,
+		iter: e.GetEnumerator(),
 		size: size,
 	}
 }

@@ -2,7 +2,7 @@ package enu
 
 import "golang.org/x/exp/constraints"
 
-func FromNumericRange[T constraints.Integer | constraints.Float](min, max T) *EnumeratorNumeric[T] {
+func FromNumericRange[T constraints.Integer | constraints.Float](min, max T) *NumericEnumerable[T] {
 	return NewNumeric[T](NewNumericRange(min, max))
 }
 
@@ -10,7 +10,7 @@ func NewNumericRange[T constraints.Integer | constraints.Float](min, max T) *Ran
 	return NewNumericRangeWithStep(min, max, T(1))
 }
 
-func FromNumericRangeWithStep[T constraints.Integer | constraints.Float](min, max, step T) *EnumeratorNumeric[T] {
+func FromNumericRangeWithStep[T constraints.Integer | constraints.Float](min, max, step T) *NumericEnumerable[T] {
 	return NewNumeric[T](NewNumericRangeWithStep(min, max, step))
 }
 

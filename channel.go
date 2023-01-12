@@ -1,7 +1,7 @@
 package enu
 
-func FromChannel[T any](ch chan (T)) *Enumerator[T] {
-	return &Enumerator[T]{iter: NewChannelEnumerator(ch)}
+func FromChannel[T any](ch chan (T)) *Enumerable[T] {
+	return New[T](NewChannelEnumerator(ch))
 }
 
 type ChannelEnumerator[T any] struct {

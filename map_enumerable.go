@@ -2,19 +2,19 @@ package enu
 
 import "github.com/samber/lo"
 
-func FromMap[K comparable, V any](collection map[K]V) *EnumeratorMap[K, V] {
-	return &EnumeratorMap[K, V]{iter: NewMapEnumerator(collection)}
+func FromMap[K comparable, V any](collection map[K]V) *MapEnumerable[K, V] {
+	return NewMap[K, V](NewMapEnumerator(collection))
 }
 
-func ToMap[K comparable, V any](e *Enumerator[KeyValuePair[K, V]]) *EnumeratorMap[K, V] {
+func ToMap[K comparable, V any](e *Enumerable[KeyValuePair[K, V]]) *MapEnumerable[K, V] {
 	m := lo.Reduce(e.ToSlice(), func(agg map[K]V, kv KeyValuePair[K, V], index int) map[K]V {
 		agg[kv.Key] = kv.Value
 		return agg
 	}, map[K]V{})
-	return &EnumeratorMap[K, V]{iter: NewMapEnumerator(m)}
+	return NewMap[K, V](NewMapEnumerator(m))
 }
 
-func (e *EnumeratorMap[K, V]) ToMap() map[K]V {
+func (e *MapEnumerable[K, V]) ToMap() map[K]V {
 	result := map[K]V{}
 	e.Each(func(kv KeyValuePair[K, V], _ int) {
 		result[kv.Key] = kv.Value
@@ -22,13 +22,13 @@ func (e *EnumeratorMap[K, V]) ToMap() map[K]V {
 	return result
 }
 
-func (e *EnumeratorMap[K, V]) Keys() []K {
+func (e *MapEnumerable[K, V]) Keys() []K {
 	return lo.Map(e.ToSlice(), func(kv KeyValuePair[K, V], _ int) K {
 		return kv.Key
 	})
 }
 
-func (e *EnumeratorMap[K, V]) Values() []V {
+func (e *MapEnumerable[K, V]) Values() []V {
 	return lo.Map(e.ToSlice(), func(kv KeyValuePair[K, V], _ int) V {
 		return kv.Value
 	})

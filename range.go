@@ -6,7 +6,7 @@ type RangeValuer[T1, T2 any] interface {
 	Next(step T2) RangeValuer[T1, T2]
 }
 
-func FromRange[T1, T2 any](min, max RangeValuer[T1, T2], step T2) *Enumerator[T1] {
+func FromRange[T1, T2 any](min, max RangeValuer[T1, T2], step T2) *Enumerable[T1] {
 	return New[T1](NewRange(min, max, step))
 }
 

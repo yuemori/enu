@@ -15,13 +15,13 @@ func main() {
 	data := struct {
 		Type               string
 		TypeWithConstraint string
-		Suffix             string
+		Prefix             string
 		ItemType           string
 		ImportPkg          string
 	}{
 		Type:               flag.Arg(2),
 		TypeWithConstraint: flag.Arg(3),
-		Suffix:             flag.Arg(4),
+		Prefix:             flag.Arg(4),
 		ItemType:           flag.Arg(5),
 		ImportPkg:          flag.Arg(6),
 	}

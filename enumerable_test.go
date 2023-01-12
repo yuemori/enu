@@ -223,7 +223,7 @@ func TestGetEnumerator(t *testing.T) {
 	t.Parallel()
 	is := assert.New(t)
 
-	enumerator := enu.FromOrdered([]int{1, 2, 3}).GetEnumerator()
-	r := enu.ToNumeric(enumerator).Sum()
+	e := enu.FromOrdered([]int{1, 2, 3})
+	r := enu.ToNumeric[int](e).Sum()
 	is.Equal(6, r)
 }

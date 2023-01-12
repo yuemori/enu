@@ -1,7 +1,7 @@
 package enu
 
 type FilterEnumerator[T any] struct {
-	iter      IEnumerable[T]
+	iter      Enumerator[T]
 	predicate func(item T, index int) bool
 	index     int
 }
@@ -30,7 +30,7 @@ func (e *FilterEnumerator[T]) Next() (T, bool) {
 }
 
 type RejectEnumerator[T any] struct {
-	iter      IEnumerable[T]
+	iter      Enumerator[T]
 	predicate func(item T, index int) bool
 	index     int
 }
@@ -59,7 +59,7 @@ func (e *RejectEnumerator[T]) Next() (T, bool) {
 }
 
 type TakeEnumerator[T any] struct {
-	iter  IEnumerable[T]
+	iter  Enumerator[T]
 	size  uint
 	index uint
 }

@@ -1,7 +1,7 @@
 package enu
 
-func FromFunc[T any](generator func(index int) (T, bool)) *Enumerator[T] {
-	return &Enumerator[T]{iter: NewGenerator(generator)}
+func FromFunc[T any](generator func(index int) (T, bool)) *Enumerable[T] {
+	return New[T](NewGenerator(generator))
 }
 
 func NewGenerator[T any](generator func(index int) (T, bool)) *FuncEnumerator[T] {
