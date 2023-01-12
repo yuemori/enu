@@ -202,7 +202,6 @@ func TestChannelWithRetry(t *testing.T) {
 	mockHttpRequest := func() func(int) (string, error) {
 		return func(n int) (string, error) {
 			if n < 5 {
-				n += 1
 				return "", errors.New("some error")
 			}
 			return "OK", nil
@@ -269,7 +268,7 @@ func TestChannelWithParallel(t *testing.T) {
 
 	// Aggregate multiple function result by async
 	r := enu.FromChannel(enu.Parallel(3, request1, request2, request3)).ToSlice()
-	is.True(time.Now().Sub(now) < (200 * time.Millisecond))
+	is.True(time.Since(now) < (200 * time.Millisecond))
 
 	is.ElementsMatch([]enu.Tuple2[string, error]{
 		{"", errors.New("some error")},

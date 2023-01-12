@@ -21,15 +21,10 @@ func (e *ChannelEnumerator[T]) Stop() {
 }
 
 func (e *ChannelEnumerator[T]) Next() (T, bool) {
-	for {
-		select {
-		case v, ok := <-e.sender:
-			if !ok {
-				return empty[T](), false
-			}
-
-			return v, true
-		default:
-		}
+	v, ok := <-e.sender
+	if !ok {
+		return empty[T](), false
 	}
+
+	return v, true
 }
