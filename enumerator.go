@@ -9,3 +9,9 @@ type IEnumerator[T any] interface {
 	// This method called when the iteration is completed.
 	Dispose()
 }
+
+// ErrorProvider supports iteration error. If an Enumerable raises an error during execution of Next() or Dispose(), implement this interface.
+type ErrorProvider interface {
+	// Err returns error during execution of Next() or Dispose()
+	Err() error
+}

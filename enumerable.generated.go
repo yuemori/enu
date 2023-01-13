@@ -70,6 +70,19 @@ func (e *Enumerable[T]) Take(num uint) *Enumerable[T] {
 	return &Enumerable[T]{enumerator: Take[T](e, num)}
 }
 
+func (e *Enumerable[T]) Result(out *[]T) *Enumerable[T] {
+	Result[T](e, out)
+
+	return e
+}
+
+func (e *Enumerable[T]) Err() error {
+	if p, ok := e.enumerator.(ErrorProvider); ok {
+		return p.Err()
+	}
+	return nil
+}
+
 func (e *Enumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e.enumerator
 }

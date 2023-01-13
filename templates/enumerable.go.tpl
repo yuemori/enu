@@ -74,6 +74,19 @@ func (e *{{.Prefix}}Enumerable[{{.Type}}]) Take(num uint) *{{.Prefix}}Enumerable
 	return &{{.Prefix}}Enumerable[{{.Type}}]{enumerator: Take[{{.ItemType}}](e, num)}
 }
 
+func (e *{{.Prefix}}Enumerable[{{.Type}}]) Result(out *[]{{.ItemType}}) *{{.Prefix}}Enumerable[{{.Type}}] {
+	Result[{{.ItemType}}](e, out)
+
+	return e
+}
+
+func (e *{{.Prefix}}Enumerable[{{.Type}}]) Err() error {
+	if p, ok := e.enumerator.(ErrorProvider); ok {
+		return p.Err()
+	}
+	return nil
+}
+
 func (e *{{.Prefix}}Enumerable[{{.Type}}]) GetEnumerator() IEnumerator[{{.ItemType}}] {
 	return e.enumerator
 }

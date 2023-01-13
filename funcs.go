@@ -247,3 +247,7 @@ func Take[T any](e IEnumerable[T], size uint) *TakeEnumerable[T] {
 		size: size,
 	}
 }
+
+func Result[T any](e IEnumerable[T], out *[]T) {
+	*out = ToSlice(e)
+}

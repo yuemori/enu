@@ -70,6 +70,19 @@ func (e *MapEnumerable[K, V]) Take(num uint) *MapEnumerable[K, V] {
 	return &MapEnumerable[K, V]{enumerator: Take[KeyValuePair[K, V]](e, num)}
 }
 
+func (e *MapEnumerable[K, V]) Result(out *[]KeyValuePair[K, V]) *MapEnumerable[K, V] {
+	Result[KeyValuePair[K, V]](e, out)
+
+	return e
+}
+
+func (e *MapEnumerable[K, V]) Err() error {
+	if p, ok := e.enumerator.(ErrorProvider); ok {
+		return p.Err()
+	}
+	return nil
+}
+
 func (e *MapEnumerable[K, V]) GetEnumerator() IEnumerator[KeyValuePair[K, V]] {
 	return e.enumerator
 }

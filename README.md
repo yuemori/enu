@@ -181,6 +181,7 @@ The basic implementations are provided by this package.
 
 - [IEnumerable[T any]](#ienumerable)
 - [IEnumerator[T any]](#ienumerator)
+- [ErrorProvider](#errorprovider)
 - [RangeValuer](#rangevaluer)
 
 ### Enumerators
@@ -227,6 +228,35 @@ type IEnumerator[T any] interface {
 	// Dispose disposes the managed resources in the collection.
 	// This method called when the iteration is completed.
 	Dispose()
+}
+```
+
+### ErrorProvider
+
+ErrorProvider supports iteration error. If an Enumerable raises an error during execution of Next() or Dispose(), implement this interface.
+
+```go
+type ErrorProvider interface {
+	// Err returns error during execution of Next() or Dispose()
+	// If you want to retrieve this error, you can do so in the following way.
+	Err() error
+}
+```
+
+If you want to retrieve this error, you can do so in the following way.
+
+```go
+e := enu.FromFile("/path/to/notfound/file")
+r := e.ToSlice()
+if err := e.Err(); err != nil {
+  panic(err)
+}
+
+// or
+e := enu.FromFile("/path/to/notfound/file")
+var result []string
+if err := e.Result(&result).Err(); err != nil {
+  panic(err)
 }
 ```
 
@@ -290,6 +320,8 @@ type RangeValuer[T1, T2 any] interface {
 
 - [Each[T any]](#each)
 - [ToSlice[T any]](#toslice)
+- [Result[T any]](#result)
+- [Err](#err)
 - [Count[T any]](#count)
 - [Filter[T any]](#filter)
 - [Reject[T any]](#reject)
@@ -605,6 +637,53 @@ r1 := enu.From([]int{1, 2, 3}).ToSlice()
 
 r2 := enu.FromMap(map[int]string{1: "foo", 2: "bar", 3: "baz"}).ToSlice()
 // []enu.KeyValuePair[int, string]{{Key: 1, Value: "foo"}, {Key: 2, Value: "bar"}, {Key: 3, Value: "baz"}}
+```
+
+### Result
+
+- lazy: false
+- supported: all
+
+Transform a enumerable into a slice and write to given ptr.
+
+```go
+e := enu.From([]int{1, 2, 3, 4, 5}).Reject(func(i, _ int) bool { return i%2 == 0 })
+
+var result []int
+e.Result(&result)
+// []int{1, 3, 5}
+```
+
+### Err
+
+- supported: all
+
+Retrieves errors that occurred during the execution of the Enumerator.
+
+This error is returned only when the Enumerator implements ErrorProvider.
+
+```go
+type errorE struct {
+	err error
+}
+
+func (e *errorE) Dispose() {}
+func (e *errorE) Next() (bool, bool) {
+	e.err = errors.New("error cause")
+	return false, false
+}
+
+// Implements ErrorProvider interface
+func (e *errorE) Err() error { return e.err }
+
+e := enu.New[bool](&errorE{})
+err := e.Err()
+// nil
+
+r, ok := e.First()
+// false, false
+err = e.Err()
+// error cause
 ```
 
 ### Count

@@ -72,6 +72,19 @@ func (e *OrderedEnumerable[T]) Take(num uint) *OrderedEnumerable[T] {
 	return &OrderedEnumerable[T]{enumerator: Take[T](e, num)}
 }
 
+func (e *OrderedEnumerable[T]) Result(out *[]T) *OrderedEnumerable[T] {
+	Result[T](e, out)
+
+	return e
+}
+
+func (e *OrderedEnumerable[T]) Err() error {
+	if p, ok := e.enumerator.(ErrorProvider); ok {
+		return p.Err()
+	}
+	return nil
+}
+
 func (e *OrderedEnumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e.enumerator
 }

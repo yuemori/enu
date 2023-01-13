@@ -1,6 +1,7 @@
 package enu_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -237,4 +238,42 @@ func TestGetEnumerator(t *testing.T) {
 	e := enu.FromOrdered([]int{1, 2, 3})
 	r := enu.ToNumeric[int](e).Sum()
 	is.Equal(6, r)
+}
+
+func TestResult(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	e := enu.From([]int{1, 2, 3, 4, 5}).Reject(func(i, _ int) bool { return i%2 == 0 })
+
+	var result []int
+	e2 := e.Result(&result)
+	is.Equal([]int{1, 3, 5}, result)
+
+	r, ok := e2.Last()
+	is.True(ok)
+	is.Equal(5, r)
+}
+
+type errorE struct {
+	err error
+}
+
+func (e *errorE) Dispose() {}
+func (e *errorE) Next() (bool, bool) {
+	e.err = errors.New("error cause")
+	return false, false
+}
+func (e *errorE) Err() error { return e.err }
+
+func TestErr(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	e := enu.New[bool](&errorE{})
+	is.NoError(e.Err())
+
+	r := e.Count()
+	is.Equal(0, r)
+	is.Error(e.Err())
 }
