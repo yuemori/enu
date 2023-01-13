@@ -18,7 +18,7 @@ func (e *{{.Prefix}}Enumerable[{{.Type}}]) Each(iteratee func({{.ItemType}}, int
 		iteratee(item, index)
 		return true
 	})
-  return e
+	return e
 }
 
 func (e *{{.Prefix}}Enumerable[{{.Type}}]) ToSlice() []{{.ItemType}} {

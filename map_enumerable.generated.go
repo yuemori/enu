@@ -14,7 +14,7 @@ func (e *MapEnumerable[K, V]) Each(iteratee func(KeyValuePair[K, V], int)) *MapE
 		iteratee(item, index)
 		return true
 	})
-  return e
+	return e
 }
 
 func (e *MapEnumerable[K, V]) ToSlice() []KeyValuePair[K, V] {

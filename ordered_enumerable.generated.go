@@ -16,7 +16,7 @@ func (e *OrderedEnumerable[T]) Each(iteratee func(T, int)) *OrderedEnumerable[T]
 		iteratee(item, index)
 		return true
 	})
-  return e
+	return e
 }
 
 func (e *OrderedEnumerable[T]) ToSlice() []T {

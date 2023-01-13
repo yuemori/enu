@@ -14,7 +14,7 @@ func (e *ComparerEnumerable[T]) Each(iteratee func(T, int)) *ComparerEnumerable[
 		iteratee(item, index)
 		return true
 	})
-  return e
+	return e
 }
 
 func (e *ComparerEnumerable[T]) ToSlice() []T {

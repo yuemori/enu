@@ -14,7 +14,7 @@ func (e *Enumerable[T]) Each(iteratee func(T, int)) *Enumerable[T] {
 		iteratee(item, index)
 		return true
 	})
-  return e
+	return e
 }
 
 func (e *Enumerable[T]) ToSlice() []T {
