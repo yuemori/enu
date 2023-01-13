@@ -1,21 +1,21 @@
 package enu
 
-type FilterEnumerable[T any] struct {
+type FilterEnumerator[T any] struct {
 	iter      IEnumerator[T]
 	predicate func(item T, index int) bool
 	index     int
 }
 
-func (e *FilterEnumerable[T]) GetEnumerator() IEnumerator[T] {
+func (e *FilterEnumerator[T]) GetEnumerator() IEnumerator[T] {
 	return e
 }
 
-func (e *FilterEnumerable[T]) Dispose() {
+func (e *FilterEnumerator[T]) Dispose() {
 	e.iter.Dispose()
 	e.index = 0
 }
 
-func (e *FilterEnumerable[T]) Next() (T, bool) {
+func (e *FilterEnumerator[T]) Next() (T, bool) {
 	for {
 		item, ok := e.iter.Next()
 		if !ok {
@@ -28,22 +28,22 @@ func (e *FilterEnumerable[T]) Next() (T, bool) {
 	}
 }
 
-type RejectEnumerable[T any] struct {
+type RejectEnumerator[T any] struct {
 	iter      IEnumerator[T]
 	predicate func(item T, index int) bool
 	index     int
 }
 
-func (e *RejectEnumerable[T]) GetEnumerator() IEnumerator[T] {
+func (e *RejectEnumerator[T]) GetEnumerator() IEnumerator[T] {
 	return e
 }
 
-func (e *RejectEnumerable[T]) Dispose() {
+func (e *RejectEnumerator[T]) Dispose() {
 	e.iter.Dispose()
 	e.index = 0
 }
 
-func (e *RejectEnumerable[T]) Next() (T, bool) {
+func (e *RejectEnumerator[T]) Next() (T, bool) {
 	for {
 		item, ok := e.iter.Next()
 		if !ok {
@@ -56,22 +56,22 @@ func (e *RejectEnumerable[T]) Next() (T, bool) {
 	}
 }
 
-type TakeEnumerable[T any] struct {
+type TakeEnumerator[T any] struct {
 	iter  IEnumerator[T]
 	size  uint
 	index uint
 }
 
-func (e *TakeEnumerable[T]) GetEnumerator() IEnumerator[T] {
+func (e *TakeEnumerator[T]) GetEnumerator() IEnumerator[T] {
 	return e
 }
 
-func (e *TakeEnumerable[T]) Dispose() {
+func (e *TakeEnumerator[T]) Dispose() {
 	e.iter.Dispose()
 	e.index = 0
 }
 
-func (e *TakeEnumerable[T]) Next() (T, bool) {
+func (e *TakeEnumerator[T]) Next() (T, bool) {
 	if e.size == e.index {
 		return empty[T](), false
 	}
@@ -83,21 +83,21 @@ func (e *TakeEnumerable[T]) Next() (T, bool) {
 	return item, true
 }
 
-type UniqEnumerable[T comparable] struct {
+type UniqEnumerator[T comparable] struct {
 	iter IEnumerator[T]
 	seen map[T]struct{}
 }
 
-func (e *UniqEnumerable[T]) GetEnumerator() IEnumerator[T] {
+func (e *UniqEnumerator[T]) GetEnumerator() IEnumerator[T] {
 	return e
 }
 
-func (e *UniqEnumerable[T]) Dispose() {
+func (e *UniqEnumerator[T]) Dispose() {
 	e.iter.Dispose()
 	e.seen = nil
 }
 
-func (e *UniqEnumerable[T]) Next() (T, bool) {
+func (e *UniqEnumerator[T]) Next() (T, bool) {
 	if e.seen == nil {
 		e.seen = map[T]struct{}{}
 	}

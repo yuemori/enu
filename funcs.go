@@ -97,6 +97,11 @@ func Last[T any](e IEnumerable[T]) (T, bool) {
 }
 
 func ToSlice[T any](e IEnumerable[T]) []T {
+	if iter, ok := e.GetEnumerator().(*SliceEnumerator[T]); ok {
+		result := make([]T, len(iter.collection))
+		copy(result, iter.collection)
+		return result
+	}
 	result := make([]T, 0)
 	Each(e, func(item T, _ int) {
 		result = append(result, item)
@@ -171,8 +176,8 @@ func Max[T constraints.Ordered](e IEnumerable[T]) T {
 	return max
 }
 
-func Uniq[T comparable](e IEnumerable[T]) *UniqEnumerable[T] {
-	return &UniqEnumerable[T]{iter: e.GetEnumerator()}
+func Uniq[T comparable](e IEnumerable[T]) *UniqEnumerator[T] {
+	return &UniqEnumerator[T]{iter: e.GetEnumerator()}
 }
 
 func Contains[T comparable](e IEnumerable[T], element T) bool {
@@ -227,22 +232,22 @@ func IsAny[T any](e IEnumerable[T], predicate func(item T) bool) bool {
 	return flag
 }
 
-func Filter[T any](e IEnumerable[T], predicate func(item T, index int) bool) *FilterEnumerable[T] {
-	return &FilterEnumerable[T]{
+func Filter[T any](e IEnumerable[T], predicate func(item T, index int) bool) *FilterEnumerator[T] {
+	return &FilterEnumerator[T]{
 		iter:      e.GetEnumerator(),
 		predicate: predicate,
 	}
 }
 
-func Reject[T any](e IEnumerable[T], predicate func(item T, index int) bool) *RejectEnumerable[T] {
-	return &RejectEnumerable[T]{
+func Reject[T any](e IEnumerable[T], predicate func(item T, index int) bool) *RejectEnumerator[T] {
+	return &RejectEnumerator[T]{
 		iter:      e.GetEnumerator(),
 		predicate: predicate,
 	}
 }
 
-func Take[T any](e IEnumerable[T], size uint) *TakeEnumerable[T] {
-	return &TakeEnumerable[T]{
+func Take[T any](e IEnumerable[T], size uint) *TakeEnumerator[T] {
+	return &TakeEnumerator[T]{
 		iter: e.GetEnumerator(),
 		size: size,
 	}
