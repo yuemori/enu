@@ -194,7 +194,7 @@ This package provides the blow enumerators:
 - [ChannelEnumerator](#channelenumerator)
   - [channel helpers](#channelhelpers)
 
-When you impelement Enumerator, you must also impelement [IEnumrator[T]](#ienumerator) interface.
+When you impelement Enumerator, you must also impelement [IEnumerator[T]](#ienumerator) interface.
 
 ## Spec: Interfaces
 
@@ -299,7 +299,7 @@ type RangeValuer[T1, T2 any] interface {
 - [Last[T any]](#last)
 - [Reverse[T any]](#reverse)
 - [Sort[T any]](#sort) only supported below:
-  - [NumericEnumerator](#numericenumerable)
+  - [NumericEnumerable](#numericenumerable)
   - [OrderedEnumerable](#orderedenumerable)
 - [SortBy[T any]](#sort_by)
 - [IsAll[T any]](#isall)
@@ -308,24 +308,24 @@ type RangeValuer[T1, T2 any] interface {
 - [ToMap[T any]](#tomap)
 - [Uniq](#uniq) only supported below:
   - [ComparerEnumerable](#comparerenumerable)
-  - [NumericEnumerator](#numericenumerable)
+  - [NumericEnumerable](#numericenumerable)
   - [OrderedEnumerable](#orderedenumerable)
 - [Contains](#contains) only supported below:
   - [ComparerEnumerable](#comparerenumerable)
-  - [NumericEnumerator](#numericenumerable)
+  - [NumericEnumerable](#numericenumerable)
   - [OrderedEnumerable](#orderedenumerable)
 - [IndexOf](#contains) only supported below:
   - [ComparerEnumerable](#comparerenumerable)
-  - [NumericEnumerator](#numericenumerable)
+  - [NumericEnumerable](#numericenumerable)
   - [OrderedEnumerable](#orderedenumerable)
 - [Min](#min) only supported below:
   - [OrderedEnumerable](#orderedenumerable)
-  - [NumericEnumerator](#numericenumerable)
+  - [NumericEnumerable](#numericenumerable)
 - [Max](#max) only supported below:
   - [OrderedEnumerable](#orderedenumerable)
-  - [NumericEnumerator](#numericenumerable)
+  - [NumericEnumerable](#numericenumerable)
 - [Sum](#sum) only supported below:
-  - [NumericEnumerator](#numericenumerable)
+  - [NumericEnumerable](#numericenumerable)
 - [Keys](#keys) only supported below:
   - [MapEnumerable](#mapenumerable)
 - [Values](#values) only supported below:
@@ -392,7 +392,7 @@ And see the [concurrent functions](#cuncurrent--functions).
 
 ### New
 
-Returns an `*Enumerable[T]` with `IEnumrator` argument.
+Returns an `*Enumerable[T]` with `IEnumerator` argument.
 
 ```go
 enumerator := enu.NewSliceEnumerator([]int{1, 2, 3})
@@ -439,7 +439,7 @@ r := enu.FromComparable([]int{1, 1, 2, 3, 3}).Uniq().ToSlice()
 
 ### ToComparable
 
-Returns an `*ComparerEnumerable[T]` with `IEnumrator[T comparable]` argument.
+Returns an `*ComparerEnumerable[T]` with `IEnumerator[T comparable]` argument.
 
 ```go
 // Enumerable[T] does not implement Uniq()
@@ -461,7 +461,7 @@ r := enu.FromMap(map[int]string{1: "foo", 2: "bar", 3: "baz"}).Keys()
 
 ### ToMap
 
-Returns an `*MapEnumerable[T]` with `IEnumrator[KeyValuePair[K, V]]` argument.
+Returns an `*MapEnumerable[T]` with `IEnumerator[KeyValuePair[K, V]]` argument.
 
 ```go
 // `Enumerable` does not impelements `Keys()`
@@ -478,7 +478,7 @@ r := enu.ToMap(e).Keys()
 
 ### FromNumeric
 
-Returns an `*NumericEnumerator[T]` with `constraints.Integer` or `constraints.Float` argument.
+Returns an `*NumericEnumerable[T]` with `constraints.Integer` or `constraints.Float` argument.
 
 ```go
 r := enu.FromNumeric([]int{1, 2, 3}).Sum()
@@ -487,7 +487,7 @@ r := enu.FromNumeric([]int{1, 2, 3}).Sum()
 
 ### ToNumeric
 
-Returns an `*NumericEnumerator[T]` with `IEnumrator[T constraints.Integer | constraints.Float]` argument.
+Returns an `*NumericEnumerable[T]` with `IEnumerator[T constraints.Integer | constraints.Float]` argument.
 
 ```go
 // `Enumerable` does not implement `Sum()`
@@ -764,7 +764,7 @@ r := enu.From([]int{1, 2, 3, 4, 5}).Reverse().ToSlice()
 
 - lazy: false
 - supported only:
-  - NumericEnumerator
+  - NumericEnumerable
   - OrderedEnumerable
 
 Sorts the slice x using `res[i] < res[j]` , keeping equal elements in their original order.
@@ -867,7 +867,7 @@ r2 := enu.FromMap(map[int]string{1: "foo", 2: "bar", 3: "baz", 4: "boo"}).Filter
 - lazy: true
 - supported: only
   - ComparerEnumerable
-  - NumericEnumerator
+  - NumericEnumerable
   - OrderedEnumerable
 
 Returns elements that are not duplicates.
@@ -882,7 +882,7 @@ r := enu.FromComparable([]int{1, 1, 2, 3, 3}).Uniq().ToSlice()
 - lazy: false
 - supported: only
   - ComparerEnumerable
-  - NumericEnumerator
+  - NumericEnumerable
   - OrderedEnumerable
 
 Returns true if an element is present in a collection.
@@ -900,7 +900,7 @@ r2 := enu.FromComparable([]int{1, 1, 2, 3, 3}).Contains(4)
 - lazy: false
 - supported: only
   - ComparerEnumerable
-  - NumericEnumerator
+  - NumericEnumerable
   - OrderedEnumerable
 
 Returns the index at which the first occurrence of a value is found in an array or return -1 if the value cannot be found.
@@ -918,7 +918,7 @@ r2 := enu.FromComparable([]int{1, 1, 2, 3, 3}).IndexOf(4)
 - lazy: false
 - supported: only
   - OrderedEnumerable
-  - NumericEnumerator
+  - NumericEnumerable
 
 Search the minimum value of a collection.
 
@@ -937,7 +937,7 @@ r2 := enu.FromOrdered([]int{}).Min()
 - lazy: false
 - supported: only
   - OrderedEnumerable
-  - NumericEnumerator
+  - NumericEnumerable
 
 Search the maximum value of a collection.
 
@@ -955,7 +955,7 @@ r2 := enu.FromOrdered([]int{}).Max()
 
 - lazy: false
 - supported: only
-  - NumericEnumerator
+  - NumericEnumerable
 
 Sums the values in a collection.
 
@@ -1070,7 +1070,7 @@ r2 := enu.FromRange[time.Month, int](Month(time.January), Month(math.MaxInt), 1)
 
 ### FromNumericRange
 
-Returns an `*NumericEnumerator[T]` with `min` and `max` argument.
+Returns an `*NumericEnumerable[T]` with `min` and `max` argument.
 
 If `min` greater than `max` empty range is returned.
 
@@ -1093,7 +1093,7 @@ r5 := enu.FromNumericRange(1, math.Inf(0)).Take(3).ToSlice()
 
 ### FromNumericRangeWithStep
 
-Returns an `*NumericEnumerator[T]` with `min` , `max` and `step` argument.
+Returns an `*NumericEnumerable[T]` with `min` , `max` and `step` argument.
 
 If `min` greater than `max` empty range is returned.
 
