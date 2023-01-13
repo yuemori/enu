@@ -15,8 +15,8 @@ func (e *FilterEnumerable[T]) Reset() {
 	e.index = 0
 }
 
-func (e *FilterEnumerable[T]) Stop() {
-	e.iter.Stop()
+func (e *FilterEnumerable[T]) Dispose() {
+	e.iter.Dispose()
 	e.index = 0
 }
 
@@ -48,8 +48,8 @@ func (e *RejectEnumerable[T]) Reset() {
 	e.index = 0
 }
 
-func (e *RejectEnumerable[T]) Stop() {
-	e.iter.Stop()
+func (e *RejectEnumerable[T]) Dispose() {
+	e.iter.Dispose()
 	e.index = 0
 }
 
@@ -81,21 +81,55 @@ func (e *TakeEnumerable[T]) Reset() {
 	e.index = 0
 }
 
-func (e *TakeEnumerable[T]) Stop() {
-	e.iter.Stop()
+func (e *TakeEnumerable[T]) Dispose() {
+	e.iter.Dispose()
 	e.index = 0
 }
 
 func (e *TakeEnumerable[T]) Next() (T, bool) {
 	if e.size == e.index {
-		e.Stop()
 		return empty[T](), false
 	}
 	item, ok := e.iter.Next()
 	if !ok {
-		e.Stop()
 		return empty[T](), false
 	}
 	e.index++
 	return item, true
+}
+
+type UniqEnumerable[T comparable] struct {
+	iter IEnumerator[T]
+	seen map[T]struct{}
+}
+
+func (e *UniqEnumerable[T]) GetEnumerator() IEnumerator[T] {
+	return e
+}
+
+func (e *UniqEnumerable[T]) Reset() {
+	e.iter.Reset()
+	e.seen = map[T]struct{}{}
+}
+
+func (e *UniqEnumerable[T]) Dispose() {
+	e.iter.Dispose()
+	e.seen = map[T]struct{}{}
+}
+
+func (e *UniqEnumerable[T]) Next() (T, bool) {
+	if e.seen == nil {
+		e.seen = map[T]struct{}{}
+	}
+	for {
+		item, ok := e.iter.Next()
+		if !ok {
+			return empty[T](), false
+		}
+		if _, ok := e.seen[item]; ok {
+			continue
+		}
+		e.seen[item] = struct{}{}
+		return item, true
+	}
 }

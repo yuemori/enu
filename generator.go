@@ -22,7 +22,7 @@ func (g *FuncEnumerator[T]) Next() (T, bool) {
 	return item, true
 }
 
-func (g *FuncEnumerator[T]) Stop() {}
+func (g *FuncEnumerator[T]) Dispose() {}
 
 func (g *FuncEnumerator[T]) Reset() {
 	g.index = 0

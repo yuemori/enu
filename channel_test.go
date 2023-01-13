@@ -75,9 +75,12 @@ func TestChannelWithTake(t *testing.T) {
 		}
 	}()
 
-	r := enu.FromChannel(ch).Take(3).ToSlice()
-	is.Equal([]int{1, 2, 3}, r)
-	// Important: func 6 times to send channel, enumerator 3 times received from channel because Take(3) called.
+	stream := enu.FromChannel(ch)
+	r1 := stream.Take(3).ToSlice()
+	is.Equal([]int{1, 2, 3}, r1)
+
+	r2 := stream.Take(1).ToSlice()
+	is.Equal([]int{4}, r2)
 	is.False(isChannelClosed(ch))
 }
 

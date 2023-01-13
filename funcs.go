@@ -15,7 +15,7 @@ func Each[T any](e IEnumerable[T], iteratee func(item T, index int)) {
 
 func each[T any](enumerable IEnumerable[T], iteratee func(item T, index int) bool) {
 	iter := enumerable.GetEnumerator()
-	defer iter.Stop()
+	defer iter.Dispose()
 
 	index := 0
 	for {
@@ -172,20 +172,8 @@ func Max[T constraints.Ordered](e IEnumerable[T]) T {
 	return max
 }
 
-func Uniq[T comparable](e IEnumerable[T]) *SliceEnumerator[T] {
-	collection := ToSlice(e)
-	result := make([]T, 0, len(collection))
-	seen := make(map[T]struct{}, len(collection))
-
-	for _, item := range collection {
-		if _, ok := seen[item]; ok {
-			continue
-		}
-		result = append(result, item)
-		seen[item] = struct{}{}
-	}
-
-	return NewSliceEnumerator(result)
+func Uniq[T comparable](e IEnumerable[T]) *UniqEnumerable[T] {
+	return &UniqEnumerable[T]{iter: e.GetEnumerator()}
 }
 
 func Contains[T comparable](e IEnumerable[T], element T) bool {

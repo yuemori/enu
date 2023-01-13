@@ -18,7 +18,7 @@ func (e *MapEnumerator[K, V]) Reset() {
 	e.index = 0
 }
 
-func (e *MapEnumerator[K, V]) Stop() {
+func (e *MapEnumerator[K, V]) Dispose() {
 	e.index = 0
 }
 

@@ -13,7 +13,7 @@ func (e *SliceEnumerator[T]) Reset() {
 	e.index = 0
 }
 
-func (e *SliceEnumerator[T]) Stop() {
+func (e *SliceEnumerator[T]) Dispose() {
 	e.index = 0
 }
 

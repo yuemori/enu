@@ -17,7 +17,7 @@ func NewChannelEnumerator[T any](ch chan (T)) *ChannelEnumerator[T] {
 func (e *ChannelEnumerator[T]) Reset() {
 }
 
-func (e *ChannelEnumerator[T]) Stop() {
+func (e *ChannelEnumerator[T]) Dispose() {
 }
 
 func (e *ChannelEnumerator[T]) Next() (T, bool) {

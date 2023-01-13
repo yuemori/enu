@@ -34,7 +34,7 @@ func (e *RangeEnumerator[T1, T2]) Reset() {
 	e.current = nil
 }
 
-func (e *RangeEnumerator[T1, T2]) Stop() {
+func (e *RangeEnumerator[T1, T2]) Dispose() {
 	e.current = nil
 }
 

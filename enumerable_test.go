@@ -198,6 +198,14 @@ func TestTake(t *testing.T) {
 
 	r4 := enu.From([]int{1, 2, 3, 4, 5}).Take(2).ToSlice()
 	is.Equal([]int{1, 2}, r4)
+
+	e := enu.From([]int{1, 2, 3, 4, 5})
+
+	r5 := e.Take(2).ToSlice()
+	is.Equal([]int{1, 2}, r5)
+
+	r6 := e.Take(3).ToSlice()
+	is.Equal([]int{1, 2, 3}, r6)
 }
 
 func TestIsAll(t *testing.T) {
