@@ -519,7 +519,7 @@ r := enu.FromComparable([]int{1, 1, 2, 3, 3}).Uniq().ToSlice()
 
 ### ToComparable
 
-Returns an `*ComparerEnumerable[T]` with `IEnumerator[T comparable]` argument.
+Returns an `*ComparerEnumerable[T]` with `IEnumerable[T comparable]` argument.
 
 ```go
 // Enumerable[T] does not implement Uniq()
@@ -541,7 +541,7 @@ r := enu.FromMap(map[int]string{1: "foo", 2: "bar", 3: "baz"}).Keys()
 
 ### ToMap
 
-Returns an `*MapEnumerable[T]` with `IEnumerator[KeyValuePair[K, V]]` argument.
+Returns an `*MapEnumerable[T]` with `IEnumerable[KeyValuePair[K, V]]` argument.
 
 ```go
 // `Enumerable` does not impelements `Keys()`
@@ -567,7 +567,7 @@ r := enu.FromNumeric([]int{1, 2, 3}).Sum()
 
 ### ToNumeric
 
-Returns an `*NumericEnumerable[T]` with `IEnumerator[T constraints.Integer | constraints.Float]` argument.
+Returns an `*NumericEnumerable[T]` with `IEnumerable[T constraints.Integer | constraints.Float]` argument.
 
 ```go
 // `Enumerable` does not implement `Sum()`
@@ -589,7 +589,7 @@ r := enu.FromOrdered([]string{"c", "a", "b"}).Sort()
 
 ### ToOrdered
 
-Returns an `*OrderedEnumerable[T]` with `IEnumerator[T constraints.Ordered]` argument.
+Returns an `*OrderedEnumerable[T]` with `IEnumerable[T constraints.Ordered]` argument.
 
 ```go
 // `Enumerable` does not implement `Sum()`
