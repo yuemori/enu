@@ -16,5 +16,5 @@ func (e *Enumerable[T]) Aggregate(accumulator func(agg []T, item T, index int) [
 }
 
 type IEnumerable[T any] interface {
-	GetEnumerator() Enumerator[T]
+	GetEnumerator() IEnumerator[T]
 }

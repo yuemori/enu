@@ -1,6 +1,6 @@
 package enu
 
-type Enumerator[T any] interface {
+type IEnumerator[T any] interface {
 	Next() (T, bool)
 	Reset()
 	Stop()

@@ -1,12 +1,12 @@
 package enu
 
 type FilterEnumerable[T any] struct {
-	iter      Enumerator[T]
+	iter      IEnumerator[T]
 	predicate func(item T, index int) bool
 	index     int
 }
 
-func (e *FilterEnumerable[T]) GetEnumerator() Enumerator[T] {
+func (e *FilterEnumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e
 }
 
@@ -34,12 +34,12 @@ func (e *FilterEnumerable[T]) Next() (T, bool) {
 }
 
 type RejectEnumerable[T any] struct {
-	iter      Enumerator[T]
+	iter      IEnumerator[T]
 	predicate func(item T, index int) bool
 	index     int
 }
 
-func (e *RejectEnumerable[T]) GetEnumerator() Enumerator[T] {
+func (e *RejectEnumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e
 }
 
@@ -67,12 +67,12 @@ func (e *RejectEnumerable[T]) Next() (T, bool) {
 }
 
 type TakeEnumerable[T any] struct {
-	iter  Enumerator[T]
+	iter  IEnumerator[T]
 	size  uint
 	index uint
 }
 
-func (e *TakeEnumerable[T]) GetEnumerator() Enumerator[T] {
+func (e *TakeEnumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e
 }
 

@@ -2,10 +2,10 @@
 package enu
 
 type ComparerEnumerable[T comparable] struct {
-	enumerator Enumerator[T]
+	enumerator IEnumerator[T]
 }
 
-func NewComparer[T comparable](e Enumerator[T]) *ComparerEnumerable[T] {
+func NewComparer[T comparable](e IEnumerator[T]) *ComparerEnumerable[T] {
 	return &ComparerEnumerable[T]{enumerator: e}
 }
 
@@ -70,7 +70,7 @@ func (e *ComparerEnumerable[T]) Take(num uint) *ComparerEnumerable[T] {
 	return &ComparerEnumerable[T]{enumerator: Take[T](e, num)}
 }
 
-func (e *ComparerEnumerable[T]) GetEnumerator() Enumerator[T] {
+func (e *ComparerEnumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e.enumerator
 }
 

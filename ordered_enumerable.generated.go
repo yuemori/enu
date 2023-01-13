@@ -4,10 +4,10 @@ import "golang.org/x/exp/constraints"
 
 
 type OrderedEnumerable[T constraints.Ordered] struct {
-	enumerator Enumerator[T]
+	enumerator IEnumerator[T]
 }
 
-func NewOrdered[T constraints.Ordered](e Enumerator[T]) *OrderedEnumerable[T] {
+func NewOrdered[T constraints.Ordered](e IEnumerator[T]) *OrderedEnumerable[T] {
 	return &OrderedEnumerable[T]{enumerator: e}
 }
 
@@ -72,7 +72,7 @@ func (e *OrderedEnumerable[T]) Take(num uint) *OrderedEnumerable[T] {
 	return &OrderedEnumerable[T]{enumerator: Take[T](e, num)}
 }
 
-func (e *OrderedEnumerable[T]) GetEnumerator() Enumerator[T] {
+func (e *OrderedEnumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e.enumerator
 }
 

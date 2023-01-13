@@ -2,10 +2,10 @@
 package enu
 
 type Enumerable[T any] struct {
-	enumerator Enumerator[T]
+	enumerator IEnumerator[T]
 }
 
-func New[T any](e Enumerator[T]) *Enumerable[T] {
+func New[T any](e IEnumerator[T]) *Enumerable[T] {
 	return &Enumerable[T]{enumerator: e}
 }
 
@@ -70,6 +70,6 @@ func (e *Enumerable[T]) Take(num uint) *Enumerable[T] {
 	return &Enumerable[T]{enumerator: Take[T](e, num)}
 }
 
-func (e *Enumerable[T]) GetEnumerator() Enumerator[T] {
+func (e *Enumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e.enumerator
 }

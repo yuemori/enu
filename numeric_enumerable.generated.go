@@ -4,10 +4,10 @@ import "golang.org/x/exp/constraints"
 
 
 type NumericEnumerable[T constraints.Integer | constraints.Float] struct {
-	enumerator Enumerator[T]
+	enumerator IEnumerator[T]
 }
 
-func NewNumeric[T constraints.Integer | constraints.Float](e Enumerator[T]) *NumericEnumerable[T] {
+func NewNumeric[T constraints.Integer | constraints.Float](e IEnumerator[T]) *NumericEnumerable[T] {
 	return &NumericEnumerable[T]{enumerator: e}
 }
 
@@ -72,7 +72,7 @@ func (e *NumericEnumerable[T]) Take(num uint) *NumericEnumerable[T] {
 	return &NumericEnumerable[T]{enumerator: Take[T](e, num)}
 }
 
-func (e *NumericEnumerable[T]) GetEnumerator() Enumerator[T] {
+func (e *NumericEnumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e.enumerator
 }
 

@@ -2,10 +2,10 @@
 package enu
 
 type MapEnumerable[K comparable, V any] struct {
-	enumerator Enumerator[KeyValuePair[K, V]]
+	enumerator IEnumerator[KeyValuePair[K, V]]
 }
 
-func NewMap[K comparable, V any](e Enumerator[KeyValuePair[K, V]]) *MapEnumerable[K, V] {
+func NewMap[K comparable, V any](e IEnumerator[KeyValuePair[K, V]]) *MapEnumerable[K, V] {
 	return &MapEnumerable[K, V]{enumerator: e}
 }
 
@@ -70,6 +70,6 @@ func (e *MapEnumerable[K, V]) Take(num uint) *MapEnumerable[K, V] {
 	return &MapEnumerable[K, V]{enumerator: Take[KeyValuePair[K, V]](e, num)}
 }
 
-func (e *MapEnumerable[K, V]) GetEnumerator() Enumerator[KeyValuePair[K, V]] {
+func (e *MapEnumerable[K, V]) GetEnumerator() IEnumerator[KeyValuePair[K, V]] {
 	return e.enumerator
 }
