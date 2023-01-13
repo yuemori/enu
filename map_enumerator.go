@@ -14,10 +14,6 @@ func NewMapEnumerator[K comparable, V any](collection map[K]V) *MapEnumerator[K,
 	return &MapEnumerator[K, V]{collection: collection, index: 0, keys: keys}
 }
 
-func (e *MapEnumerator[K, V]) Reset() {
-	e.index = 0
-}
-
 func (e *MapEnumerator[K, V]) Dispose() {
 	e.index = 0
 }

@@ -10,11 +10,6 @@ func (e *FilterEnumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e
 }
 
-func (e *FilterEnumerable[T]) Reset() {
-	e.iter.Reset()
-	e.index = 0
-}
-
 func (e *FilterEnumerable[T]) Dispose() {
 	e.iter.Dispose()
 	e.index = 0
@@ -41,11 +36,6 @@ type RejectEnumerable[T any] struct {
 
 func (e *RejectEnumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e
-}
-
-func (e *RejectEnumerable[T]) Reset() {
-	e.iter.Reset()
-	e.index = 0
 }
 
 func (e *RejectEnumerable[T]) Dispose() {
@@ -76,11 +66,6 @@ func (e *TakeEnumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e
 }
 
-func (e *TakeEnumerable[T]) Reset() {
-	e.iter.Reset()
-	e.index = 0
-}
-
 func (e *TakeEnumerable[T]) Dispose() {
 	e.iter.Dispose()
 	e.index = 0
@@ -107,14 +92,9 @@ func (e *UniqEnumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e
 }
 
-func (e *UniqEnumerable[T]) Reset() {
-	e.iter.Reset()
-	e.seen = map[T]struct{}{}
-}
-
 func (e *UniqEnumerable[T]) Dispose() {
 	e.iter.Dispose()
-	e.seen = map[T]struct{}{}
+	e.seen = nil
 }
 
 func (e *UniqEnumerable[T]) Next() (T, bool) {

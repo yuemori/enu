@@ -9,10 +9,6 @@ func NewSliceEnumerator[T any](collection []T) *SliceEnumerator[T] {
 	return &SliceEnumerator[T]{collection: collection}
 }
 
-func (e *SliceEnumerator[T]) Reset() {
-	e.index = 0
-}
-
 func (e *SliceEnumerator[T]) Dispose() {
 	e.index = 0
 }

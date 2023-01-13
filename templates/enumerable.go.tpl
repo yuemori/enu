@@ -6,10 +6,10 @@ import {{.ImportPkg}}
 {{end}}
 
 type {{.Prefix}}Enumerable[{{.TypeWithConstraint}}] struct {
-	enumerator Enumerator[{{.ItemType}}]
+	enumerator IEnumerator[{{.ItemType}}]
 }
 
-func New{{.Prefix}}[{{.TypeWithConstraint}}](e Enumerator[{{.ItemType}}]) *{{.Prefix}}Enumerable[{{.Type}}] {
+func New{{.Prefix}}[{{.TypeWithConstraint}}](e IEnumerator[{{.ItemType}}]) *{{.Prefix}}Enumerable[{{.Type}}] {
 	return &{{.Prefix}}Enumerable[{{.Type}}]{enumerator: e}
 }
 
@@ -74,7 +74,7 @@ func (e *{{.Prefix}}Enumerable[{{.Type}}]) Take(num uint) *{{.Prefix}}Enumerable
 	return &{{.Prefix}}Enumerable[{{.Type}}]{enumerator: Take[{{.ItemType}}](e, num)}
 }
 
-func (e *{{.Prefix}}Enumerable[{{.Type}}]) GetEnumerator() Enumerator[{{.ItemType}}] {
+func (e *{{.Prefix}}Enumerable[{{.Type}}]) GetEnumerator() IEnumerator[{{.ItemType}}] {
 	return e.enumerator
 }
 {{ range $i, $e := .Extras -}}

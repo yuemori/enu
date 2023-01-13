@@ -30,10 +30,6 @@ func empty[T any]() T {
 	return empty
 }
 
-func (e *RangeEnumerator[T1, T2]) Reset() {
-	e.current = nil
-}
-
 func (e *RangeEnumerator[T1, T2]) Dispose() {
 	e.current = nil
 }

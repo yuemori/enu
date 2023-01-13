@@ -40,26 +40,25 @@ func Nth[T any](e IEnumerable[T], nth int) (T, bool) {
 		return collection[l+nth], true
 	}
 
-	iter := e.GetEnumerator()
-	defer iter.Reset()
+	result := empty[T]()
+	ok := false
 
-	index := 0
-	for {
-		item, ok := iter.Next()
-		if !ok {
-			return empty[T](), false
-		}
+	each(e, func(item T, index int) bool {
 		if nth == index {
-			return item, true
+			ok = true
+			result = item
+			return false
 		}
-		index++
-	}
+		return true
+	})
+	return result, ok
 }
 
 func Count[T any](e IEnumerable[T]) int {
 	v := 0
-	Each(e, func(item T, _ int) {
+	each(e, func(item T, _ int) bool {
 		v += 1
+		return true
 	})
 	return v
 }
@@ -79,14 +78,14 @@ func Find[T any](e IEnumerable[T], predicate func(T, int) bool) (T, bool) {
 }
 
 func First[T any](e IEnumerable[T]) (T, bool) {
-	iter := e.GetEnumerator()
-	defer iter.Reset()
-
-	item, ok := iter.Next()
-	if !ok {
-		return empty[T](), false
-	}
-	return item, true
+	result := empty[T]()
+	ok := false
+	each(e, func(item T, _ int) bool {
+		result = item
+		ok = true
+		return false
+	})
+	return result, ok
 }
 
 func Last[T any](e IEnumerable[T]) (T, bool) {

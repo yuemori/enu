@@ -22,8 +22,6 @@ func (g *FuncEnumerator[T]) Next() (T, bool) {
 	return item, true
 }
 
-func (g *FuncEnumerator[T]) Dispose() {}
-
-func (g *FuncEnumerator[T]) Reset() {
+func (g *FuncEnumerator[T]) Dispose() {
 	g.index = 0
 }
