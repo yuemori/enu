@@ -286,6 +286,7 @@ type RangeValuer[T1, T2 any] interface {
 
 - [New](#new)
 - [From](#from)
+- [To](#to)
 - [FromChannel](#fromchannel)
 
 ### ComparerEnumerable
@@ -444,6 +445,18 @@ Returns an `*Enumerator[T]` with `slice` argument.
 ```go
 r := enu.From([]int{1, 2, 3}).Count()
 // 3
+```
+
+### To
+
+Returns an `*Enumerator[T]` with `IEnumerable[T]` argument.
+
+```go
+// each enumerables implements IEnumerable[T]
+var e IEnumerable[int] = enu.FromComparable([]int{1, 1, 2, 3, 3})
+// use generic methods
+r := enu.To(e).ToSlice()
+// []int{1, 1, 2, 3, 3}
 ```
 
 ### FromChannel
