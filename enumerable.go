@@ -15,6 +15,8 @@ func (e *Enumerable[T]) Aggregate(accumulator func(agg []T, item T, index int) [
 	return Reduce[T](e, accumulator, []T{})
 }
 
+// IEnumerable[T any] is an interface for using Enumerable functions.
 type IEnumerable[T any] interface {
+	// GetEnumerator returns IEnumerator[T] .
 	GetEnumerator() IEnumerator[T]
 }

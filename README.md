@@ -40,17 +40,17 @@ r := enu.From([]int{1, 2, 3, 4, 5}).Filter(func(i int, _ int) bool {
 
 `enu` provides `Enumerators` and `Enumerables` .
 
-`Enumerator` is type-specific IEnumerator for each collections.
+`Enumerator` provides iteration over collection (slice, map, channel, generator...).
 
-`Enumerable` provides collection-specific enumerate behaviour.
+`Enumerable` supports a iteration over a collection of a specific type (int, string, struct...).
 
 example below:
 
 ```go
-// SliceEnumerator provides enumerable behaviour for slice
+// SliceEnumerator provides generic iteration for slice
 enumerable := enu.NewSliceEnumerator([]int{1, 2, 3})
 
-// Enumerator provides enumerator interfaces
+// Enumerable provides enumerator interfaces
 enumerator := enu.New(enumerable)
 
 r := enumerator.Count()
@@ -59,7 +59,7 @@ r := enumerator.Count()
 
 ### Method chain
 
-`Enumeartors` supports mathod chaining.
+`Enumerable` supports mathod chaining.
 
 example below:
 
@@ -72,9 +72,9 @@ r := enu.From([]int{1, 2, 3, 4, 5}).Filter(func(i int, _ int) bool {
 
 ### Lazy Enumeration
 
-Importantly, `Enumerator` postpone enumeration and enumerate values only an as-needed basis.
+Importantly, `Enuemrable` postpone enumeration and enumerate values only an as-needed basis.
 
-So the `Enumerator` only asks the `Enumerable` for the number it needs.
+So the `Enumerable` only asks the `Enumerator` for the number it needs.
 
 See below examples:
 
@@ -93,16 +93,9 @@ r := enu.FromNumericRange(1, math.MaxInt).Take(10).ToSlice()
 fibonacci := func() func(int) (int, bool) {
   n, n1 := 0, 1
   return func(i int) (int, bool) {
-    fn := func(index int) (int, bool) {
-      // Reset variable if index given zero.
-      if index == 0 {
-        n, n1 = 0, 1
-      }
-      v := n
-      n, n1 = n1, n+n1
-      return v, true
-    }
-    return fn(i)
+    v := n
+    n, n1 = n1, n+n1
+    return v, true
   }
 }
 
@@ -113,28 +106,32 @@ r := enu.FromFunc(fibonacci()).Take(10).ToSlice()
 *Channel*
 
 ```go
-ch := make(chan (int))
-done := make(chan struct{})
+ch1 := make(chan (int), 1)
 
 go func() {
-  defer close(ch)
-  defer close(done)
+  defer close(ch1)
 
-  i := 0
-  for {
-    select {
-    case <-done:
-      break
-    default:
-      ch <- i
-      i++
-    }
+  for i := 1; i < 6; i++ {
+    ch1 <- i
   }
 }()
 
-r := enu.FromChannelWithDone(ch, done).Take(10).ToSlice()
-// []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-<- done // close done channel after finished enumeration
+// iterate to be channel closed
+r := enu.FromChannel(ch1).ToSlice()
+// []int{1, 2, 3, 4, 5}
+
+ch2 := make(chan (int), 1)
+defer close(ch2)
+
+go func() {
+  for i := 1; i < 6; i++ {
+    ch2 <- i
+  }
+}()
+
+// or limited iteration
+r := enu.FromChannel(ch2).Take(3).ToSlice()
+// []int{1, 2, 3}
 ```
 
 and helper functions to use:
@@ -162,50 +159,33 @@ r := enu.FromChannel(enu.Parallel(2, request1, request2, request3)).ToSlice()
 // }
 ```
 
-*Cache Result*
+### Enumerables
 
-```golang
-ch := make(chan (int))
+This package provides the below Enumerables:
 
-go func() {
-  defer close(ch)
-
-  for i := 1; i < 6; i++ {
-    ch <- i
-  }
-}()
-
-channel := enu.FromChannel(ch)
-
-// `Find` supports lazy iteration.
-// stop iteration but channel does not closed here.
-r2, ok := channel.Find(func(i, _ int) bool {
-  return i == 3
-})
-// 3, true
-
-// Enumerator cache the results of previous,
-// and resume iterate to needed.
-// and channel closed if lazy function completed.
-r3 := channel.ToSlice()
-// []int{1, 2, 3, 4, 5} -> 1,2,3 is from cache. 4,5 from source.
-```
-
-### Enumerators
-
-This package provides the below Enumerators:
-
-- [Enumerator[T any]](#enumerator)
-- [EnumeratorComparable[T comparable]](#enumeratorcomparable)
-- [EnumeratorMap[K comparable, V any]](#enumeratormap)
-- [EnumeratorNumeric[T constraints.Float | constraints.Integer]](#enumeratornumeric)
-- [EnumeratorOrdered[T constraints.Ordered]](#enumeratorordered)
+- [Enumerable[T any]](#enumerator)
+- [ComparerEnumerable[T comparable]](#comparerenumerable)
+- [MapEnumerable[K comparable, V any]](#mapenumerable)
+- [NumericEnumerable[T constraints.Float | constraints.Integer]](#numericenumerable)
+- [OrderedEnumerable[T constraints.Ordered]](#orderedenumerable)
 
 These allow for a common interface and operations specific to each collection.
 
-### Enumerables
+When you impelement Enumearble, you must also impelement [IEnumerable[T]](#ienumerable) interface.
 
-This package provides the blow enumerables:
+### Interfaces
+
+Required to use the functions in this package.
+
+The basic implementations are provided by this package.
+
+- [IEnumerable[T any]](#ienumerable)
+- [IEnumerator[T any]](#ienumerator)
+- [RangeValuer](#rangevaluer)
+
+### Enumerators
+
+This package provides the blow enumerators:
 
 - [RangeEnumerator](#rangeenumerator)
 - [NumericRangeEnumerator](#numericrangeenumerator)
@@ -214,96 +194,145 @@ This package provides the blow enumerables:
 - [ChannelEnumerator](#channelenumerator)
   - [channel helpers](#channelhelpers)
 
-[Enumerators](#enumerators) require an enumerable interfaces to each collection.
+When you impelement Enumerator, you must also impelement [IEnumrator[T]](#ienumerator) interface.
 
-Enumerables provides a useful interface for each collection and usecases.
+## Spec: Interfaces
 
-## Spec: Enumerators
+### IEnumerable
 
-### Enumerator
+Interfaces to `Enumerable[T]` .
 
-`Enumerator` is basic enumerator to each collection.
+Implementing this method allows to use the Enumerable functions.
+
+The basic Enumerable implementations are provided by this package.
+
+```go
+// IEnumerable[T any] is an interface for using Enumerable functions.
+type IEnumerable[T any] interface {
+	// GetEnumerator returns IEnumerator[T] .
+	GetEnumerator() IEnumerator[T]
+}
+```
+
+### IEnumerator
+
+Interfaces to `Enumerator[T]` .
+
+```go
+// IEnumerator[T any] supports iteration over a generic collection.
+type IEnumerator[T any] interface {
+	// Next returns a next item of collection. If Next passes the end of the collection, the empty item and true.
+	Next() (T, bool)
+
+	// Dispose disposes the managed resources in the collection.
+	// This method called when the iteration is completed.
+	Dispose()
+}
+```
+
+### RangeValuer
+
+Interface to `RangeEnumerator`.
+
+```go
+type RangeValuer[T1, T2 any] interface {
+  // Compare self and other
+  Compare(T1) int
+
+  // Returns current value.
+  Value() T1
+
+  // Returns Next RangeValuer
+  Next(step T2) RangeValuer[T1, T2]
+}
+```
+
+## Spec: Enumerables
+
+### Enumerable
+
+`Enumerable` supports generic type of `[T any]` .
 
 - [New](#new)
 - [From](#from)
 - [FromChannel](#fromchannel)
 - [FromChannelWithDone](#fromchannelwithdone)
 
-### EnumeratorComparable
+### ComparerEnumerable
 
-`Enumerator` is enumerator for `comparable` collections.
+`ComparerEnumerable` supports generic type of `[T comparable]` .
 
 - [FromComparable](#fromcomparable)
 - [ToComparable](#tocomparable)
 
-### EnumeratorMap
+### MapEnumerable
 
-`Enumerator` is enumerator for `map` collections.
+`MapEnumerable` supports generic type of `[K comparable, V any]` .
 
 - [FromMap](#frommap)
 - [ToMap](#tomap)
 
-### EnumeratorNumeric
+### NumericEnumerable
 
-`Enumerator` is enumerator for `constraints.Integer` and `constraints.Float` collections.
+`NumericEnumerable` supports generic type of `[T constraints.Integer | constraints.Float]` .
 
 - [FromNumeric](#fromnumeric)
 - [ToNumeric](#tonumeric)
 
-### EnumeratorOrdered
+### OrderedEnumerable
 
-`Enumerator` is enumerator for `constraints.Integer` and `constraints.Float` collections.
+`OrderedEnumerable` supports generic type of `[T constraints.Ordered]` .
 
 - [FromOrdered](#fromordered)
 - [ToOrdered](#toordered)
 
 ## Spec: Enumerator functions
 
-- [Each](#each)
-- [ToSlice](#toslice)
-- [Count](#count)
-- [Filter](#filter)
-- [Reject](#reject)
-- [Nth](#nth)
-- [Find](#find)
-- [First](#first)
-- [Last](#last)
-- [Reverse](#reverse)
-- [Sort](#sort) only supported below:
-  - [EnumeratorNumeric](#enumeratornumeric)
-  - [EnumeratorOrdered](#enumeratorordered)
-- [SortBy](#sort_by)
-- [IsAll](#isall)
-- [IsAny](#isany)
-- [Take](#take)
-- [ToMap](#tomap)
+- [Each[T any]](#each)
+- [ToSlice[T any]](#toslice)
+- [Count[T any]](#count)
+- [Filter[T any]](#filter)
+- [Reject[T any]](#reject)
+- [Nth[T any]](#nth)
+- [Find[T any]](#find)
+- [First[T any]](#first)
+- [Last[T any]](#last)
+- [Reverse[T any]](#reverse)
+- [Sort[T any]](#sort) only supported below:
+  - [NumericEnumerator](#numericenumerable)
+  - [OrderedEnumerable](#orderedenumerable)
+- [SortBy[T any]](#sort_by)
+- [IsAll[T any]](#isall)
+- [IsAny[T any]](#isany)
+- [Take[T any]](#take)
+- [ToMap[T any]](#tomap)
 - [Uniq](#uniq) only supported below:
-  - [EnumeratorComparable](#enumeratorcomparable)
-  - [EnumeratorNumeric](#enumeratornumeric)
-  - [EnumeratorOrdered](#enumeratorordered)
+  - [ComparerEnumerable](#comparerenumerable)
+  - [NumericEnumerator](#numericenumerable)
+  - [OrderedEnumerable](#orderedenumerable)
 - [Contains](#contains) only supported below:
-  - [EnumeratorComparable](#enumeratorcomparable)
-  - [EnumeratorNumeric](#enumeratornumeric)
-  - [EnumeratorOrdered](#enumeratorordered)
+  - [ComparerEnumerable](#comparerenumerable)
+  - [NumericEnumerator](#numericenumerable)
+  - [OrderedEnumerable](#orderedenumerable)
 - [IndexOf](#contains) only supported below:
-  - [EnumeratorComparable](#enumeratorcomparable)
-  - [EnumeratorNumeric](#enumeratornumeric)
-  - [EnumeratorOrdered](#enumeratorordered)
+  - [ComparerEnumerable](#comparerenumerable)
+  - [NumericEnumerator](#numericenumerable)
+  - [OrderedEnumerable](#orderedenumerable)
 - [Min](#min) only supported below:
-  - [EnumeratorOrdered](#enumeratorordered)
-  - [EnumeratorNumeric](#enumeratornumeric)
+  - [OrderedEnumerable](#orderedenumerable)
+  - [NumericEnumerator](#numericenumerable)
 - [Max](#max) only supported below:
-  - [EnumeratorOrdered](#enumeratorordered)
-  - [EnumeratorNumeric](#enumeratornumeric)
+  - [OrderedEnumerable](#orderedenumerable)
+  - [NumericEnumerator](#numericenumerable)
 - [Sum](#sum) only supported below:
-  - [EnumeratorNumeric](#enumeratornumeric)
+  - [NumericEnumerator](#numericenumerable)
 - [Keys](#keys) only supported below:
-  - [EnumeratorMap](#enumeratormap)
+  - [MapEnumerable](#mapenumerable)
 - [Values](#values) only supported below:
-  - [EnumeratorMap](#enumeratormap)
+  - [MapEnumerable](#mapenumerable)
 - [GetEnumerator](#getenumerator)
 
-## Spec: Enumerables
+## Spec: Enumerators
 
 ### RangeEnumerator
 
@@ -363,7 +392,7 @@ And see the [concurrent functions](#cuncurrent--functions).
 
 ### New
 
-Returns an `*Enumerator[T]` with `Enumerable` argument.
+Returns an `*Enumerable[T]` with `IEnumrator` argument.
 
 ```go
 enumerator := enu.NewSliceEnumerator([]int{1, 2, 3})
@@ -373,7 +402,7 @@ r := enu.New(enumerator).Count()
 
 ### From
 
-Returns an `Enumerator` with `slice` argument.
+Returns an `*Enumerator[T]` with `slice` argument.
 
 ```go
 r := enu.From([]int{1, 2, 3}).Count()
@@ -382,7 +411,7 @@ r := enu.From([]int{1, 2, 3}).Count()
 
 ### FromChannel
 
-Returns an `*Enumerator[T]` with `channel` argument.
+Returns an `*Enumerator[T]` with `chan(T)` argument.
 
 ```go
 ch := make(chan (int))
@@ -399,39 +428,9 @@ r := enu.FromChannel(ch).ToSlice()
 // []int{1, 2, 3, 4, 5}
 ```
 
-### FromChannelWithDone
-
-Returns an `*Enumerator[T]` with two `channel` argument.
-
-Expects T as the first argument and Done channel as the second argument.
-
-```go
-ch := make(chan (int))
-done := make(chan struct{})
-
-go func() {
-  defer close(ch)
-  defer close(done)
-
-  i := 0
-  for {
-    select {
-    case <-done:
-      break
-    default:
-      ch <- i
-      i++
-    }
-  }
-}()
-
-r := enu.FromChannelWithDone(ch, done).Take(10).ToSlice()
-// []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-```
-
 ### FromComparable
 
-Returns an `*EnumeratorComparable[T]` with `comparable` argument.
+Returns an `*ComparerEnumerable[T]` with `comparable` argument.
 
 ```go
 r := enu.FromComparable([]int{1, 1, 2, 3, 3}).Uniq().ToSlice()
@@ -440,20 +439,20 @@ r := enu.FromComparable([]int{1, 1, 2, 3, 3}).Uniq().ToSlice()
 
 ### ToComparable
 
-Returns an `*EnumeratorComparable[T]` with `Enumerable[T comparable]` argument.
+Returns an `*ComparerEnumerable[T]` with `IEnumrator[T comparable]` argument.
 
 ```go
 // Enumerable[T] does not implement Uniq()
 e := enu.From([]int{1, 1, 2, 3, 3})
 
-// Convert to `EnumerableComparable` to be use.
+// Convert to `ComparerEnumerable` to be use.
 r := enu.ToComparable(e).Uniq().ToSlice()
 // []int{1, 2, 3}
 ```
 
 ### FromMap
 
-Returns an `*EnumeratorMap[T]` with `map` argument.
+Returns an `*MapEnumerable[K, V]` with `map[K]V` argument.
 
 ```go
 r := enu.FromMap(map[int]string{1: "foo", 2: "bar", 3: "baz"}).Keys()
@@ -462,24 +461,24 @@ r := enu.FromMap(map[int]string{1: "foo", 2: "bar", 3: "baz"}).Keys()
 
 ### ToMap
 
-Returns an `*EnumeratorMap[T]` with `Enumerable[KeyValuePair[K, V]]` argument.
+Returns an `*MapEnumerable[T]` with `IEnumrator[KeyValuePair[K, V]]` argument.
 
 ```go
-// `Enumerator` does not impelements `Keys()`
+// `Enumerable` does not impelements `Keys()`
 e := enu.From([]enu.KeyValuePair[int, string]{
   {Key: 1, Value: "foo"},
   {Key: 2, Value: "bar"},
   {Key: 3, Value: "baz"},
 })
 
-// Convert to `EnumerableMap`
+// Convert to `MapEnumerable`
 r := enu.ToMap(e).Keys()
 // []int{1, 2, 3}
 ```
 
 ### FromNumeric
 
-Returns an `*EnumeratorNumeric[T]` with `constraints.Integer` or `constraints.Float` argument.
+Returns an `*NumericEnumerator[T]` with `constraints.Integer` or `constraints.Float` argument.
 
 ```go
 r := enu.FromNumeric([]int{1, 2, 3}).Sum()
@@ -488,20 +487,20 @@ r := enu.FromNumeric([]int{1, 2, 3}).Sum()
 
 ### ToNumeric
 
-Returns an `*EnumeratorNumeric[T]` with `Enumerator[T constraints.Integer | constraints.Float]` argument.
+Returns an `*NumericEnumerator[T]` with `IEnumrator[T constraints.Integer | constraints.Float]` argument.
 
 ```go
-// `Enumrator` does not implement `Sum()`
+// `Enumerable` does not implement `Sum()`
 e := enu.From([]int{1, 2, 3})
 
-// Convert to `EnumeratorNumeric`
+// Convert to `NumericEnumerable`
 r := enu.ToNumeric(e).Sum()
 // 6
 ```
 
 ### FromOrdered
 
-Returns an `*EnumeratorOrdered[T]` with `constraints.Ordered` argument.
+Returns an `*OrderedEnumerable[T]` with `constraints.Ordered` argument.
 
 ```go
 r := enu.FromOrdered([]string{"c", "a", "b"}).Sort()
@@ -510,20 +509,74 @@ r := enu.FromOrdered([]string{"c", "a", "b"}).Sort()
 
 ### ToOrdered
 
-Returns an `*EnumeratorOrdered[T]` with `Enumerator[T constraints.Ordered]` argument.
+Returns an `*OrderedEnumerable[T]` with `IEnumerator[T constraints.Ordered]` argument.
 
 ```go
-// `Enumrator` does not implement `Sum()`
+// `Enumerable` does not implement `Sum()`
 e := enu.From([]string{"c", "a", "b"})
 
-// Convert to `EnumeratorNumeric`
+// Convert to `NumericEnumerable`
 r := enu.ToNumeric(e).Sum()
 // 6
 ```
 
-## Enumerator functions
+## Query functions
 
-Enumerators called `ToSlice` function if `lazy` is false.
+### `lazy` keyword
+
+Every enumerable functions have `lazy` keyword.
+
+If the `lazy` keyword is true, then calling the function will immediately evaluate the Enumerable by the previously called Queryies.
+
+example:
+
+```go
+// Filter is lazy. The collection does not iterated at here.
+e := enu.From([]int{1, 2, 3}).Filter(func(item, index int) bool {
+  return item % 2 == 0
+})
+
+// The collection iterate immediately.
+r := e.ToSlice()
+```
+
+Also, the Query returns a new Enumereable. This supports intuitive iteration of collections.
+
+example:
+
+```go
+// Filter is lazy. The collection does not iterated at here.
+e := enu.From([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}).Filter(func(item, index int) bool {
+  return item % 2 == 0
+})
+
+r1 := e.Take(5)
+// []int{2, 4, 6, 8, 10}
+
+r2 := e.Take(5)
+// []int{2, 4, 6, 8, 10}
+```
+
+However that these behaviors vary depending on the Enumerator.
+
+For example, `ChannelEnumerator` which handles streams from `chan(T)` behaves as belows:
+
+```go
+ch := make(chan (int))
+
+go func() {
+  for i := 1; i < 6; i++ {
+    ch <- i
+  }
+}()
+
+stream := enu.FromChannel(ch)
+r1 := stream.Take(3).ToSlice()
+// []int{1, 2, 3}
+
+r2 := stream.Take(1).ToSlice()
+// []int{4}
+```
 
 ### Each
 
@@ -571,7 +624,7 @@ r := enu.FromMap(map[int]string{1: "foo", 2: "bar", 3: "baz"}).Count()
 
 ### Filter
 
-- lazy: false
+- lazy: true
 - supported: all
 
 Counts the number of elements in the collection.
@@ -590,7 +643,7 @@ r2 := enu.FromMap(map[int]string{1: "foo", 2: "bar", 3: "baz", 4: "boo"}).Filter
 
 ### Reject
 
-- lazy: false
+- lazy: true
 - supported: all
 
 The opposite of Filter, this method returns the elements of collection that predicate does not return truthy for.
@@ -627,12 +680,10 @@ nth, ok := enu.New([]int{0, 1, 2, 3}).Nth(6)
 
 ### Find
 
-- lazy: true
+- lazy: false
 - supported: all
 
 Search an element in a slice based on a predicate. It returns element and true if element was found.
-
-This works lazily. If a checked items is found, it stops iteration and does not look into remaining groups.
 
 ```golang
 slices := enu.From([]int{1, 2, 3, 4, 5})
@@ -653,10 +704,9 @@ r2, ok := slices.Find(func(_, index int) bool {
 // 4, true
 
 ch := make(chan (int))
+defer close(ch)
 
 go func() {
-  defer close(ch)
-
   for i := 1; i < 6; i++ {
     ch <- i
   }
@@ -670,12 +720,10 @@ r3, ok := enu.FromChannel(ch).Find(func(i int) bool {
 
 ### First
 
-- lazy: true
+- lazy: false
 - supported: all
 
 Search a first element in a slice based. It returns element and true if collection was not empty.
-
-This works lazily. If a first item is found, it stops iteration and does not look into remaining groups.
 
 ```golang
 r1, ok := enu.From([]int{1, 2, 3, 4, 5}).First()
@@ -716,8 +764,8 @@ r := enu.From([]int{1, 2, 3, 4, 5}).Reverse().ToSlice()
 
 - lazy: false
 - supported only:
-  - EnumeratorNumeric
-  - EnumeratorOrdered
+  - NumericEnumerator
+  - OrderedEnumerable
 
 Sorts the slice x using `res[i] < res[j]` , keeping equal elements in their original order.
 
@@ -742,14 +790,14 @@ r := enu.From([]string{"aa", "bbb", "c"}).SortBy(func(i, j string) bool {
 
 ### IsAll
 
-- lazy: true
+- lazy: false
 - supported: all
 
 Returns true if all elements meet a specified criterion; false otherwise.
 
-IsAll the slice x using the provided less function, keeping equal elements in their original order.
+`IsAll` the slice x using the provided less function, keeping equal elements in their original order.
 
-This works lazily. If a first negative item is found, it stops iteration and does not look into remaining groups.
+If a first negative item is found, it stops iteration and does not look into remaining groups.
 
 ```golang
 r := enu.From([]int{1, 1, 1, 1, 1}).IsAll(func(item int) bool { return item == 1 })
@@ -761,14 +809,14 @@ r2 := enu.From([]int{1, 2, 1, 1, 1}).IsAll(func(item int) bool { return item == 
 
 ### IsAny
 
-- lazy: true
+- lazy: false
 - supported: all
 
 Returns true if any elements meet a specified criterion; false otherwise.
 
 IsAll the slice x using the provided less function, keeping equal elements in their original order.
 
-This works lazily. If a first positive item is found, it stops iteration and does not look into remaining groups.
+If a first positive item is found, it stops iteration and does not look into remaining groups.
 
 ```golang
 r1 := enu.From([]int{1, 1, 1, 1, 1}).IsAny(func(item int) bool { return item == 2 })
@@ -802,7 +850,7 @@ r2 := enu.FromNumericRange(1, math.MaxInt).Take(10).ToSlice()
 
 Returns a map key-value pairs provided by index and value of slice.
 
-If receiver is `EnumeratorMap`, returns map provided by `KeyValuePair` .
+If receiver is `MapEnumerable`, returns map provided by `KeyValuePair` .
 
 ```golang
 r1 := enu.From([]int{3, 2, 1}).ToMap()
@@ -816,11 +864,11 @@ r2 := enu.FromMap(map[int]string{1: "foo", 2: "bar", 3: "baz", 4: "boo"}).Filter
 
 ### Uniq
 
-- lazy: false
+- lazy: true
 - supported: only
-  - EnumeratorComparable
-  - EnumeratorNumeric
-  - EnumeratorOrdered
+  - ComparerEnumerable
+  - NumericEnumerator
+  - OrderedEnumerable
 
 Returns elements that are not duplicates.
 
@@ -833,9 +881,9 @@ r := enu.FromComparable([]int{1, 1, 2, 3, 3}).Uniq().ToSlice()
 
 - lazy: false
 - supported: only
-  - EnumeratorComparable
-  - EnumeratorNumeric
-  - EnumeratorOrdered
+  - ComparerEnumerable
+  - NumericEnumerator
+  - OrderedEnumerable
 
 Returns true if an element is present in a collection.
 
@@ -851,9 +899,9 @@ r2 := enu.FromComparable([]int{1, 1, 2, 3, 3}).Contains(4)
 
 - lazy: false
 - supported: only
-  - EnumeratorComparable
-  - EnumeratorNumeric
-  - EnumeratorOrdered
+  - ComparerEnumerable
+  - NumericEnumerator
+  - OrderedEnumerable
 
 Returns the index at which the first occurrence of a value is found in an array or return -1 if the value cannot be found.
 
@@ -869,8 +917,8 @@ r2 := enu.FromComparable([]int{1, 1, 2, 3, 3}).IndexOf(4)
 
 - lazy: false
 - supported: only
-  - EnumeratorOrdered
-  - EnumeratorNumeric
+  - OrderedEnumerable
+  - NumericEnumerator
 
 Search the minimum value of a collection.
 
@@ -888,8 +936,8 @@ r2 := enu.FromOrdered([]int{}).Min()
 
 - lazy: false
 - supported: only
-  - EnumeratorOrdered
-  - EnumeratorNumeric
+  - OrderedEnumerable
+  - NumericEnumerator
 
 Search the maximum value of a collection.
 
@@ -907,7 +955,7 @@ r2 := enu.FromOrdered([]int{}).Max()
 
 - lazy: false
 - supported: only
-  - EnumeratorNumeric
+  - NumericEnumerator
 
 Sums the values in a collection.
 
@@ -925,7 +973,7 @@ r2 := enu.FromNumeric([]int{}).Sum()
 
 - lazy: false
 - supported: only
-  - EnumeratorMap
+  - MapEnumerable
 
 Returns an array of the map keys.
 
@@ -938,7 +986,7 @@ r := enu.FromMap(map[int]string{1: "foo", 2: "bar", 3: "baz"}).Keys()
 
 - lazy: false
 - supported: only
-  - EnumeratorMap
+  - MapEnumerable
 
 Returns an array of the map values.
 
@@ -952,17 +1000,17 @@ r := enu.FromMap(map[int]string{1: "foo", 2: "bar", 3: "baz"}).Values()
 - lazy: true
 - supported: all
 
-Returns `*Enumerator[T any]` .
+Returns `IEnumerator[T]` .
 
 ```golang
 // Example: `ToNumeric` only supports `*Enumerator[T any]` , but enu.FromOrdered returns EnumeratorOrderd
-// Get `*Enumreator[T any]` if GetEnumerator to use.
+// Get `IEnumreator[T any]` if GetEnumerator to use.
 enumerator := enu.FromOrdered([]int{1, 2, 3}).GetEnumerator()
-r := enu.ToNumeric(enumerator).Sum()
+r := enu.ToNumeric[int](enumerator).Sum()
 // 6
 ```
 
-## Enumrables
+## Enumerators
 
 ### FromRange
 
@@ -1020,26 +1068,9 @@ r2 := enu.FromRange[time.Month, int](Month(time.January), Month(math.MaxInt), 1)
 // }
 ```
 
-### RangeValuer
-
-Interface to `RangeEnumerator`.
-
-```go
-type RangeValuer[T1, T2 any] interface {
-  // Compare self and other
-  Compare(T1) int
-
-  // Returns current value.
-  Value() T1
-
-  // Returns Next RangeValuer
-  Next(step T2) RangeValuer[T1, T2]
-}
-```
-
 ### FromNumericRange
 
-Returns an `*EnumeratorNumeric[T]` with `min` and `max` argument.
+Returns an `*NumericEnumerator[T]` with `min` and `max` argument.
 
 If `min` greater than `max` empty range is returned.
 
@@ -1062,7 +1093,7 @@ r5 := enu.FromNumericRange(1, math.Inf(0)).Take(3).ToSlice()
 
 ### FromNumericRangeWithStep
 
-Returns an `*EnumeratorNumeric[T]` with `min` , `max` and `step` argument.
+Returns an `*NumericEnumerator[T]` with `min` , `max` and `step` argument.
 
 If `min` greater than `max` empty range is returned.
 
@@ -1113,17 +1144,10 @@ Returns an `*Enumerator[T]` with `func(index int) (T, bool)` func.
 ```go
 fibonacci := func() func(int) (int, bool) {
   n, n1 := 0, 1
-  return func(i int) (int, bool) {
-    fn := func(index int) (int, bool) {
-      // Reset variable if index given zero.
-      if index == 0 {
-        n, n1 = 0, 1
-      }
-      v := n
-      n, n1 = n1, n+n1
-      return v, true
-    }
-    return fn(i)
+  return func(_ int) (int, bool) {
+    v := n
+    n, n1 = n1, n+n1
+    return v, true
   }
 }
 
