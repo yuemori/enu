@@ -9,11 +9,12 @@ func New[T any](e IEnumerator[T]) *Enumerable[T] {
 	return &Enumerable[T]{enumerator: e}
 }
 
-func (e *Enumerable[T]) Each(iteratee func(T, int)) {
+func (e *Enumerable[T]) Each(iteratee func(T, int)) *Enumerable[T] {
 	each[T](e, func(item T, index int) bool {
 		iteratee(item, index)
 		return true
 	})
+  return e
 }
 
 func (e *Enumerable[T]) ToSlice() []T {

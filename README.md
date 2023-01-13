@@ -194,6 +194,7 @@ This package provides the blow enumerators:
 - [Generator](#generator)
 - [ChannelEnumerator](#channelenumerator)
   - [channel helpers](#channelhelpers)
+- [FileEnumerator](#fileenumerator)
 
 When you impelement Enumerator, you must also impelement [IEnumerator[T]](#ienumerator) interface.
 
@@ -286,7 +287,6 @@ type RangeValuer[T1, T2 any] interface {
 - [New](#new)
 - [From](#from)
 - [FromChannel](#fromchannel)
-- [FromChannelWithDone](#fromchannelwithdone)
 
 ### ComparerEnumerable
 
@@ -399,9 +399,14 @@ Implements `RangeValuer` interface if you want custom range.
 `ChannelEnumerator` is enumerator for `chan(T)` .
 
 - [FromChannel](#fromchannel)
-- [FromChannelWithDone](#fromchannelwithdone)
 
 And see the [concurrent functions](#cuncurrent--functions).
+
+### FileEnumerator
+
+`FileEnumerator` is enumerator for file .
+
+- [FromFile](#fromfile)
 
 ## Spec: helpers
 
@@ -458,6 +463,49 @@ go func() {
 
 r := enu.FromChannel(ch).ToSlice()
 // []int{1, 2, 3, 4, 5}
+```
+
+### FromFile
+
+Returns an `*Enumerator[T]` with string of filepath argument.
+
+```go
+f, err := os.CreateTemp(os.TempDir(), "enu-filetest-")
+if err != nil {
+  t.Fatal(err)
+}
+
+for _, s := range []string{"foo\n", "bar\n", "baz"} {
+  if _, err = f.Write([]byte(s)); err != nil {
+    t.Fatal(err)
+  }
+}
+
+reader := enu.FromFile(f.Name())
+
+// Capture error from Err()
+err := reader.Each(func(line string, index int) {
+  log.Printf("line%d: %s", index, line)
+}).Err()
+
+var result []string
+if err := reader.Result(&result).Err(); err != nil {
+  panic(err)
+}
+
+r1 := reader.ToSlice()
+// []string{"foo", "bar", "baz"}
+err1 := reader.Err()
+// nil
+
+if err := os.Remove(f.Name()); err != nil {
+  t.Fatal(err)
+}
+
+r2 := reader.ToSlice()
+// []string{}
+err2 := reader.Err()
+// no such file or directory
 ```
 
 ### FromComparable

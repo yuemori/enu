@@ -11,11 +11,12 @@ func NewOrdered[T constraints.Ordered](e IEnumerator[T]) *OrderedEnumerable[T] {
 	return &OrderedEnumerable[T]{enumerator: e}
 }
 
-func (e *OrderedEnumerable[T]) Each(iteratee func(T, int)) {
+func (e *OrderedEnumerable[T]) Each(iteratee func(T, int)) *OrderedEnumerable[T] {
 	each[T](e, func(item T, index int) bool {
 		iteratee(item, index)
 		return true
 	})
+  return e
 }
 
 func (e *OrderedEnumerable[T]) ToSlice() []T {

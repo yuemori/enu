@@ -2,6 +2,7 @@
 test:
 	make -B codegen
 	go test -v
+	golangci-lint run
 
 .PHONY: codegen
 codegen: Makefile enumerable.generated.go comparer_enumerable.generated.go map_enumerable.generated.go ordered_enumerable.generated.go numeric_enumerable.generated.go

@@ -9,11 +9,12 @@ func NewComparer[T comparable](e IEnumerator[T]) *ComparerEnumerable[T] {
 	return &ComparerEnumerable[T]{enumerator: e}
 }
 
-func (e *ComparerEnumerable[T]) Each(iteratee func(T, int)) {
+func (e *ComparerEnumerable[T]) Each(iteratee func(T, int)) *ComparerEnumerable[T] {
 	each[T](e, func(item T, index int) bool {
 		iteratee(item, index)
 		return true
 	})
+  return e
 }
 
 func (e *ComparerEnumerable[T]) ToSlice() []T {

@@ -9,11 +9,12 @@ func NewMap[K comparable, V any](e IEnumerator[KeyValuePair[K, V]]) *MapEnumerab
 	return &MapEnumerable[K, V]{enumerator: e}
 }
 
-func (e *MapEnumerable[K, V]) Each(iteratee func(KeyValuePair[K, V], int)) {
+func (e *MapEnumerable[K, V]) Each(iteratee func(KeyValuePair[K, V], int)) *MapEnumerable[K, V] {
 	each[KeyValuePair[K, V]](e, func(item KeyValuePair[K, V], index int) bool {
 		iteratee(item, index)
 		return true
 	})
+  return e
 }
 
 func (e *MapEnumerable[K, V]) ToSlice() []KeyValuePair[K, V] {

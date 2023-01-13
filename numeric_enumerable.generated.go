@@ -11,11 +11,12 @@ func NewNumeric[T constraints.Integer | constraints.Float](e IEnumerator[T]) *Nu
 	return &NumericEnumerable[T]{enumerator: e}
 }
 
-func (e *NumericEnumerable[T]) Each(iteratee func(T, int)) {
+func (e *NumericEnumerable[T]) Each(iteratee func(T, int)) *NumericEnumerable[T] {
 	each[T](e, func(item T, index int) bool {
 		iteratee(item, index)
 		return true
 	})
+  return e
 }
 
 func (e *NumericEnumerable[T]) ToSlice() []T {

@@ -13,11 +13,12 @@ func New{{.Prefix}}[{{.TypeWithConstraint}}](e IEnumerator[{{.ItemType}}]) *{{.P
 	return &{{.Prefix}}Enumerable[{{.Type}}]{enumerator: e}
 }
 
-func (e *{{.Prefix}}Enumerable[{{.Type}}]) Each(iteratee func({{.ItemType}}, int)) {
+func (e *{{.Prefix}}Enumerable[{{.Type}}]) Each(iteratee func({{.ItemType}}, int)) *{{.Prefix}}Enumerable[{{.Type}}] {
 	each[{{.ItemType}}](e, func(item {{.ItemType}}, index int) bool {
 		iteratee(item, index)
 		return true
 	})
+  return e
 }
 
 func (e *{{.Prefix}}Enumerable[{{.Type}}]) ToSlice() []{{.ItemType}} {
