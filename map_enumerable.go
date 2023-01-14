@@ -20,7 +20,7 @@ func (e *MapEnumerable[K, V]) ToMap() map[K]V {
 }
 
 func (e *MapEnumerable[K, V]) Keys() []K {
-	keys := make([]K, 0)
+	keys := []K{}
 	e.Each(func(kv KeyValuePair[K, V], _ int) {
 		keys = append(keys, kv.Key)
 	})
@@ -28,7 +28,7 @@ func (e *MapEnumerable[K, V]) Keys() []K {
 }
 
 func (e *MapEnumerable[K, V]) Values() []V {
-	values := make([]V, 0)
+	values := []V{}
 	e.Each(func(kv KeyValuePair[K, V], _ int) {
 		values = append(values, kv.Value)
 	})

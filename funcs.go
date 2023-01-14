@@ -97,12 +97,7 @@ func Last[T any](e IEnumerable[T]) (T, bool) {
 }
 
 func ToSlice[T any](e IEnumerable[T]) []T {
-	if iter, ok := e.GetEnumerator().(*SliceEnumerator[T]); ok {
-		result := make([]T, len(iter.collection))
-		copy(result, iter.collection)
-		return result
-	}
-	result := make([]T, 0)
+	result := []T{}
 	Each(e, func(item T, _ int) {
 		result = append(result, item)
 	})
@@ -254,5 +249,7 @@ func Take[T any](e IEnumerable[T], size uint) *TakeEnumerator[T] {
 }
 
 func Result[T any](e IEnumerable[T], out *[]T) {
-	*out = ToSlice(e)
+	Each(e, func(item T, _ int) {
+		*out = append(*out, item)
+	})
 }
