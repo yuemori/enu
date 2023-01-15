@@ -8,17 +8,6 @@ func To[T any](e IEnumerable[T]) *Enumerable[T] {
 	return New(e.GetEnumerator())
 }
 
-func (e *Enumerable[T]) ToMap() map[int]T {
-	return Reduce[T](e, func(agg map[int]T, item T, index int) map[int]T {
-		agg[index] = item
-		return agg
-	}, map[int]T{})
-}
-
-func (e *Enumerable[T]) Aggregate(accumulator func(agg []T, item T, index int) []T) []T {
-	return Reduce[T](e, accumulator, []T{})
-}
-
 // IEnumerable[T any] is an interface for using Enumerable functions.
 type IEnumerable[T any] interface {
 	// GetEnumerator returns IEnumerator[T] .

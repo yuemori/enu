@@ -26,9 +26,7 @@ func (e *Enumerable[T]) Count() int {
 }
 
 func (e *Enumerable[T]) Filter(predicate func(T, int) bool) *Enumerable[T] {
-	return &Enumerable[T]{
-		enumerator: Filter[T](e, predicate),
-	}
+	return New[T](Filter[T](e, predicate))
 }
 
 func (e *Enumerable[T]) Nth(nth int) (T, bool) {
@@ -48,15 +46,15 @@ func (e *Enumerable[T]) Last() (T, bool) {
 }
 
 func (e *Enumerable[T]) Reverse() *Enumerable[T] {
-	return &Enumerable[T]{enumerator: Reverse[T](e)}
+	return New[T](Reverse[T](e))
 }
 
 func (e *Enumerable[T]) SortBy(sorter func(i, j T) bool) *Enumerable[T] {
-	return &Enumerable[T]{enumerator: SortBy[T](e, sorter)}
+	return New[T](SortBy[T](e, sorter))
 }
 
 func (e *Enumerable[T]) Reject(predicate func(T, int) bool) *Enumerable[T] {
-	return &Enumerable[T]{enumerator: Reject[T](e, predicate)}
+	return New[T](Reject[T](e, predicate))
 }
 
 func (e *Enumerable[T]) IsAll(predicate func(T) bool) bool {
@@ -67,8 +65,8 @@ func (e *Enumerable[T]) IsAny(predicate func(T) bool) bool {
 	return IsAny[T](e, predicate)
 }
 
-func (e *Enumerable[T]) Take(num uint) *Enumerable[T] {
-	return &Enumerable[T]{enumerator: Take[T](e, num)}
+func (e *Enumerable[T]) Take(num int) *Enumerable[T] {
+	return New[T](Take[T](e, num))
 }
 
 func (e *Enumerable[T]) Result(out *[]T) *Enumerable[T] {
@@ -86,4 +84,11 @@ func (e *Enumerable[T]) Err() error {
 
 func (e *Enumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e.enumerator
+}
+
+func (e *Enumerable[T]) ToMap() map[int]T {
+	return Reduce[T](e, func(agg map[int]T, item T, index int) map[int]T {
+		agg[index] = item
+		return agg
+	}, map[int]T{})
 }

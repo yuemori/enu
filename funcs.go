@@ -241,7 +241,7 @@ func Reject[T any](e IEnumerable[T], predicate func(item T, index int) bool) *Re
 	}
 }
 
-func Take[T any](e IEnumerable[T], size uint) *TakeEnumerator[T] {
+func Take[T any](e IEnumerable[T], size int) *TakeEnumerator[T] {
 	return &TakeEnumerator[T]{
 		iter: e.GetEnumerator(),
 		size: size,

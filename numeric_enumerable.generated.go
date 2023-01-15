@@ -28,9 +28,7 @@ func (e *NumericEnumerable[T]) Count() int {
 }
 
 func (e *NumericEnumerable[T]) Filter(predicate func(T, int) bool) *NumericEnumerable[T] {
-	return &NumericEnumerable[T]{
-		enumerator: Filter[T](e, predicate),
-	}
+	return NewNumeric[T](Filter[T](e, predicate))
 }
 
 func (e *NumericEnumerable[T]) Nth(nth int) (T, bool) {
@@ -50,15 +48,15 @@ func (e *NumericEnumerable[T]) Last() (T, bool) {
 }
 
 func (e *NumericEnumerable[T]) Reverse() *NumericEnumerable[T] {
-	return &NumericEnumerable[T]{enumerator: Reverse[T](e)}
+	return NewNumeric[T](Reverse[T](e))
 }
 
 func (e *NumericEnumerable[T]) SortBy(sorter func(i, j T) bool) *NumericEnumerable[T] {
-	return &NumericEnumerable[T]{enumerator: SortBy[T](e, sorter)}
+	return NewNumeric[T](SortBy[T](e, sorter))
 }
 
 func (e *NumericEnumerable[T]) Reject(predicate func(T, int) bool) *NumericEnumerable[T] {
-	return &NumericEnumerable[T]{enumerator: Reject[T](e, predicate)}
+	return NewNumeric[T](Reject[T](e, predicate))
 }
 
 func (e *NumericEnumerable[T]) IsAll(predicate func(T) bool) bool {
@@ -69,8 +67,8 @@ func (e *NumericEnumerable[T]) IsAny(predicate func(T) bool) bool {
 	return IsAny[T](e, predicate)
 }
 
-func (e *NumericEnumerable[T]) Take(num uint) *NumericEnumerable[T] {
-	return &NumericEnumerable[T]{enumerator: Take[T](e, num)}
+func (e *NumericEnumerable[T]) Take(num int) *NumericEnumerable[T] {
+	return NewNumeric[T](Take[T](e, num))
 }
 
 func (e *NumericEnumerable[T]) Result(out *[]T) *NumericEnumerable[T] {
@@ -88,18 +86,6 @@ func (e *NumericEnumerable[T]) Err() error {
 
 func (e *NumericEnumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e.enumerator
-}
-
-func (e *NumericEnumerable[T]) Contains(item T) bool {
-	return Contains[T](e, item)
-}
-
-func (e *NumericEnumerable[T]) IndexOf(item T) int {
-	return IndexOf[T](e, item)
-}
-
-func (e *NumericEnumerable[T]) Max() T {
-	return Max[T](e)
 }
 
 func (e *NumericEnumerable[T]) Min() T {
@@ -123,4 +109,16 @@ func (e *NumericEnumerable[T]) ToMap() map[int]T {
 
 func (e *NumericEnumerable[T]) Uniq() *NumericEnumerable[T] {
 	return NewNumeric[T](Uniq[T](e))
+}
+
+func (e *NumericEnumerable[T]) Contains(item T) bool {
+	return Contains[T](e, item)
+}
+
+func (e *NumericEnumerable[T]) IndexOf(item T) int {
+	return IndexOf[T](e, item)
+}
+
+func (e *NumericEnumerable[T]) Max() T {
+	return Max[T](e)
 }

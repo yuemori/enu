@@ -26,9 +26,7 @@ func (e *MapEnumerable[K, V]) Count() int {
 }
 
 func (e *MapEnumerable[K, V]) Filter(predicate func(KeyValuePair[K, V], int) bool) *MapEnumerable[K, V] {
-	return &MapEnumerable[K, V]{
-		enumerator: Filter[KeyValuePair[K, V]](e, predicate),
-	}
+	return NewMap[K, V](Filter[KeyValuePair[K, V]](e, predicate))
 }
 
 func (e *MapEnumerable[K, V]) Nth(nth int) (KeyValuePair[K, V], bool) {
@@ -48,15 +46,15 @@ func (e *MapEnumerable[K, V]) Last() (KeyValuePair[K, V], bool) {
 }
 
 func (e *MapEnumerable[K, V]) Reverse() *MapEnumerable[K, V] {
-	return &MapEnumerable[K, V]{enumerator: Reverse[KeyValuePair[K, V]](e)}
+	return NewMap[K, V](Reverse[KeyValuePair[K, V]](e))
 }
 
 func (e *MapEnumerable[K, V]) SortBy(sorter func(i, j KeyValuePair[K, V]) bool) *MapEnumerable[K, V] {
-	return &MapEnumerable[K, V]{enumerator: SortBy[KeyValuePair[K, V]](e, sorter)}
+	return NewMap[K, V](SortBy[KeyValuePair[K, V]](e, sorter))
 }
 
 func (e *MapEnumerable[K, V]) Reject(predicate func(KeyValuePair[K, V], int) bool) *MapEnumerable[K, V] {
-	return &MapEnumerable[K, V]{enumerator: Reject[KeyValuePair[K, V]](e, predicate)}
+	return NewMap[K, V](Reject[KeyValuePair[K, V]](e, predicate))
 }
 
 func (e *MapEnumerable[K, V]) IsAll(predicate func(KeyValuePair[K, V]) bool) bool {
@@ -67,8 +65,8 @@ func (e *MapEnumerable[K, V]) IsAny(predicate func(KeyValuePair[K, V]) bool) boo
 	return IsAny[KeyValuePair[K, V]](e, predicate)
 }
 
-func (e *MapEnumerable[K, V]) Take(num uint) *MapEnumerable[K, V] {
-	return &MapEnumerable[K, V]{enumerator: Take[KeyValuePair[K, V]](e, num)}
+func (e *MapEnumerable[K, V]) Take(num int) *MapEnumerable[K, V] {
+	return NewMap[K, V](Take[KeyValuePair[K, V]](e, num))
 }
 
 func (e *MapEnumerable[K, V]) Result(out *[]KeyValuePair[K, V]) *MapEnumerable[K, V] {

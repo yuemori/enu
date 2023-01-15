@@ -2,7 +2,7 @@
 package enu
 
 {{- if .ImportPkg}}
-import {{.ImportPkg}}
+import "{{.ImportPkg}}"
 {{end}}
 
 type {{.Prefix}}Enumerable[{{.TypeWithConstraint}}] struct {
@@ -30,9 +30,7 @@ func (e *{{.Prefix}}Enumerable[{{.Type}}]) Count() int {
 }
 
 func (e *{{.Prefix}}Enumerable[{{.Type}}]) Filter(predicate func({{.ItemType}}, int) bool) *{{.Prefix}}Enumerable[{{.Type}}] {
-	return &{{.Prefix}}Enumerable[{{.Type}}]{
-		enumerator: Filter[{{.ItemType}}](e, predicate),
-	}
+	return New{{$.Prefix}}[{{$.Type}}](Filter[{{.ItemType}}](e, predicate))
 }
 
 func (e *{{.Prefix}}Enumerable[{{.Type}}]) Nth(nth int) ({{.ItemType}}, bool) {
@@ -52,15 +50,15 @@ func (e *{{.Prefix}}Enumerable[{{.Type}}]) Last() ({{.ItemType}}, bool) {
 }
 
 func (e *{{.Prefix}}Enumerable[{{.Type}}]) Reverse() *{{.Prefix}}Enumerable[{{.Type}}] {
-	return &{{.Prefix}}Enumerable[{{.Type}}]{enumerator: Reverse[{{.ItemType}}](e)}
+	return New{{$.Prefix}}[{{$.Type}}](Reverse[{{.ItemType}}](e))
 }
 
 func (e *{{.Prefix}}Enumerable[{{.Type}}]) SortBy(sorter func(i, j {{.ItemType}}) bool) *{{.Prefix}}Enumerable[{{.Type}}] {
-	return &{{.Prefix}}Enumerable[{{.Type}}]{enumerator: SortBy[{{.ItemType}}](e, sorter)}
+	return New{{$.Prefix}}[{{$.Type}}](SortBy[{{.ItemType}}](e, sorter))
 }
 
 func (e *{{.Prefix}}Enumerable[{{.Type}}]) Reject(predicate func({{.ItemType}}, int) bool) *{{.Prefix}}Enumerable[{{.Type}}] {
-	return &{{.Prefix}}Enumerable[{{.Type}}]{enumerator: Reject[{{.ItemType}}](e, predicate)}
+	return New{{$.Prefix}}[{{$.Type}}](Reject[{{.ItemType}}](e, predicate))
 }
 
 func (e *{{.Prefix}}Enumerable[{{.Type}}]) IsAll(predicate func({{.ItemType}}) bool) bool {
@@ -71,8 +69,8 @@ func (e *{{.Prefix}}Enumerable[{{.Type}}]) IsAny(predicate func({{.ItemType}}) b
 	return IsAny[{{.ItemType}}](e, predicate)
 }
 
-func (e *{{.Prefix}}Enumerable[{{.Type}}]) Take(num uint) *{{.Prefix}}Enumerable[{{.Type}}] {
-	return &{{.Prefix}}Enumerable[{{.Type}}]{enumerator: Take[{{.ItemType}}](e, num)}
+func (e *{{.Prefix}}Enumerable[{{.Type}}]) Take(num int) *{{.Prefix}}Enumerable[{{.Type}}] {
+	return New{{$.Prefix}}[{{$.Type}}](Take[{{.ItemType}}](e, num))
 }
 
 func (e *{{.Prefix}}Enumerable[{{.Type}}]) Result(out *[]{{.ItemType}}) *{{.Prefix}}Enumerable[{{.Type}}] {

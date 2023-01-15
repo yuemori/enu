@@ -1,23 +1,25 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"os"
-	"sort"
-	"strings"
 	"text/template"
 )
 
+var extrasMethods = map[string][]string{
+	"ToMap":    {"", "Comparer", "Numeric", "Ordered"},
+	"Uniq":     {"Comparer", "Numeric", "Ordered"},
+	"Contains": {"Comparer", "Numeric", "Ordered"},
+	"IndexOf":  {"Comparer", "Numeric", "Ordered"},
+	"Max":      {"Numeric", "Ordered"},
+	"Min":      {"Numeric", "Ordered"},
+	"Sort":     {"Numeric", "Ordered"},
+	"Sum":      {"Numeric"},
+}
+
 func main() {
-	flag.Parse()
-	in := flag.Arg(0)
-	out := flag.Arg(1)
-
-	extras := sort.StringSlice(strings.Split(flag.Arg(7), ","))
-	extras.Sort()
-
-	data := struct {
+	data := map[string]struct {
+		Name               string
 		Type               string
 		TypeWithConstraint string
 		Prefix             string
@@ -25,26 +27,68 @@ func main() {
 		ImportPkg          string
 		Extras             []string
 	}{
-		Type:               flag.Arg(2),
-		TypeWithConstraint: flag.Arg(3),
-		Prefix:             flag.Arg(4),
-		ItemType:           flag.Arg(5),
-		ImportPkg:          flag.Arg(6),
-		Extras:             extras,
+		"enumerable.generated.go": {
+			Type:               "T",
+			TypeWithConstraint: "T any",
+			Prefix:             "",
+			ItemType:           "T",
+			ImportPkg:          "",
+		},
+		"comparer_enumerable.generated.go": {
+			Type:               "T",
+			TypeWithConstraint: "T comparable",
+			Prefix:             "Comparer",
+			ItemType:           "T",
+			ImportPkg:          "",
+		},
+		"ordered_enumerable.generated.go": {
+			Type:               "T",
+			TypeWithConstraint: "T constraints.Ordered",
+			Prefix:             "Ordered",
+			ItemType:           "T",
+			ImportPkg:          "golang.org/x/exp/constraints",
+		},
+		"numeric_enumerable.generated.go": {
+			Type:               "T",
+			TypeWithConstraint: "T constraints.Integer | constraints.Float",
+			Prefix:             "Numeric",
+			ItemType:           "T",
+			ImportPkg:          "golang.org/x/exp/constraints",
+		},
+		"map_enumerable.generated.go": {
+			Type:               "K, V",
+			TypeWithConstraint: "K comparable, V any",
+			Prefix:             "Map",
+			ItemType:           "KeyValuePair[K, V]",
+			ImportPkg:          "",
+		},
 	}
 
-	t, err := template.ParseFiles(in)
-	if err != nil {
-		log.Println(err)
-	}
+	for out, d := range data {
+		t, err := template.ParseFiles("templates/enumerable.go.tpl")
+		if err != nil {
+			log.Println(err)
+		}
 
-	fp, err := os.Create(out)
-	if err != nil {
-		panic(err)
-	}
-	defer fp.Close()
+		fp, err := os.Create(out)
+		if err != nil {
+			panic(err)
+		}
+		defer fp.Close()
 
-	if err = t.Execute(fp, data); err != nil {
-		log.Println(err)
+		d.Extras = []string{}
+
+		for method, targets := range extrasMethods {
+			for _, t := range targets {
+				if t == d.Prefix {
+					d.Extras = append(d.Extras, method)
+					break
+				}
+			}
+		}
+
+		if err = t.Execute(fp, d); err != nil {
+			log.Println(err)
+		}
 	}
 }

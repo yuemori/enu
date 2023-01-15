@@ -28,9 +28,7 @@ func (e *OrderedEnumerable[T]) Count() int {
 }
 
 func (e *OrderedEnumerable[T]) Filter(predicate func(T, int) bool) *OrderedEnumerable[T] {
-	return &OrderedEnumerable[T]{
-		enumerator: Filter[T](e, predicate),
-	}
+	return NewOrdered[T](Filter[T](e, predicate))
 }
 
 func (e *OrderedEnumerable[T]) Nth(nth int) (T, bool) {
@@ -50,15 +48,15 @@ func (e *OrderedEnumerable[T]) Last() (T, bool) {
 }
 
 func (e *OrderedEnumerable[T]) Reverse() *OrderedEnumerable[T] {
-	return &OrderedEnumerable[T]{enumerator: Reverse[T](e)}
+	return NewOrdered[T](Reverse[T](e))
 }
 
 func (e *OrderedEnumerable[T]) SortBy(sorter func(i, j T) bool) *OrderedEnumerable[T] {
-	return &OrderedEnumerable[T]{enumerator: SortBy[T](e, sorter)}
+	return NewOrdered[T](SortBy[T](e, sorter))
 }
 
 func (e *OrderedEnumerable[T]) Reject(predicate func(T, int) bool) *OrderedEnumerable[T] {
-	return &OrderedEnumerable[T]{enumerator: Reject[T](e, predicate)}
+	return NewOrdered[T](Reject[T](e, predicate))
 }
 
 func (e *OrderedEnumerable[T]) IsAll(predicate func(T) bool) bool {
@@ -69,8 +67,8 @@ func (e *OrderedEnumerable[T]) IsAny(predicate func(T) bool) bool {
 	return IsAny[T](e, predicate)
 }
 
-func (e *OrderedEnumerable[T]) Take(num uint) *OrderedEnumerable[T] {
-	return &OrderedEnumerable[T]{enumerator: Take[T](e, num)}
+func (e *OrderedEnumerable[T]) Take(num int) *OrderedEnumerable[T] {
+	return NewOrdered[T](Take[T](e, num))
 }
 
 func (e *OrderedEnumerable[T]) Result(out *[]T) *OrderedEnumerable[T] {
@@ -90,18 +88,6 @@ func (e *OrderedEnumerable[T]) GetEnumerator() IEnumerator[T] {
 	return e.enumerator
 }
 
-func (e *OrderedEnumerable[T]) Contains(item T) bool {
-	return Contains[T](e, item)
-}
-
-func (e *OrderedEnumerable[T]) IndexOf(item T) int {
-	return IndexOf[T](e, item)
-}
-
-func (e *OrderedEnumerable[T]) Max() T {
-	return Max[T](e)
-}
-
 func (e *OrderedEnumerable[T]) Min() T {
 	return Min[T](e)
 }
@@ -119,4 +105,16 @@ func (e *OrderedEnumerable[T]) ToMap() map[int]T {
 
 func (e *OrderedEnumerable[T]) Uniq() *OrderedEnumerable[T] {
 	return NewOrdered[T](Uniq[T](e))
+}
+
+func (e *OrderedEnumerable[T]) Contains(item T) bool {
+	return Contains[T](e, item)
+}
+
+func (e *OrderedEnumerable[T]) IndexOf(item T) int {
+	return IndexOf[T](e, item)
+}
+
+func (e *OrderedEnumerable[T]) Max() T {
+	return Max[T](e)
 }
