@@ -279,3 +279,15 @@ func TestChannelWithParallel(t *testing.T) {
 		{"https://google.com", nil},
 	}, r)
 }
+
+func TestChannelWithAsync(t *testing.T) {
+	t.Parallel()
+	is := assert.New(t)
+
+	r1 := enu.FromChannel(enu.Async(func(ch chan (int)) {
+		ch <- 1
+		ch <- 2
+		ch <- 3
+	})).ToSlice()
+	is.Equal([]int{1, 2, 3}, r1)
+}

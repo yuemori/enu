@@ -4,6 +4,18 @@ import (
 	"sync"
 )
 
+func Async[T any](fn func(chan (T))) chan T {
+	result := make(chan (T))
+
+	go func() {
+		defer close(result)
+
+		fn(result)
+	}()
+
+	return result
+}
+
 func Repeat[T any](bufferSize, repeatCount int, fn func(int) T) chan (T) {
 	ch := make(chan (T), bufferSize)
 	wg := new(sync.WaitGroup)
